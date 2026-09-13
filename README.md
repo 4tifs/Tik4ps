@@ -1,13 +1,19 @@
-# 4tif Video Patcher
+# 4tif
 
-This is a static website. Open `index.html` in a modern desktop browser to use it locally, or upload the folder to a static hosting service.
+A browser-based video metadata patcher for MP4 and MOV files.
 
-## GitHub Pages
+## How it works
 
-1. Create a new GitHub repository, for example `4tif-patcher`.
-2. Upload the contents of this folder, including `index.html` and `.nojekyll`, to the repository root.
-3. In the repository, open **Settings** → **Pages**.
-4. Under **Build and deployment**, select **Deploy from a branch**, then choose `main` and `/ (root)`.
-5. Save. GitHub will show the public website address after deployment.
+Choose whether your source video is 60 FPS or 120 FPS, select the video, and press **PATCH VIDEO**. The patched file downloads automatically with `_4tif` added to its name.
 
-All video processing occurs in the visitor's browser. No server, API key, or video upload is used.
+## Privacy
+
+Your video is never uploaded or stored. All processing happens locally in your browser.
+
+## Use
+
+1. Open the website.
+2. Choose **60 FPS video** or **120 FPS video**.
+3. Select or drop in an MP4 or MOV.
+4. Click **PATCH VIDEO**.
+5. Find the downloaded `_4tif` file in your Downloads folder.

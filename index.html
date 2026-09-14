@@ -23,13 +23,19 @@
     button { width: 100%; border: 0; border-radius: 9px; padding: 13px 18px; cursor: pointer; background: #f4f4f4; color: #111; font-weight: 750; letter-spacing: .05em; }
     button:disabled { opacity: .42; cursor: not-allowed; }
     progress { width: 100%; height: 9px; margin-top: 19px; accent-color: #5eea80; }
-    #status { min-height: 24px; margin: 14px 0 0; font-size: .88rem; }
+    #status, #undoStatus { min-height: 24px; margin: 14px 0 0; font-size: .88rem; }
     .note { margin-top: 25px; font-size: .8rem; color: #858585; }
+    .restore-link { width: auto; margin-top: 4px; padding: 0; background: none; color: #878787; font-size: .75rem; font-weight: 400; letter-spacing: 0; text-decoration: underline; }
     footer { margin-top: 30px; color: #8b8b8b; font-size: .78rem; line-height: 1.8; }
     footer a { color: #d7d7d7; text-decoration: none; }
     footer a:hover { color: #fff; text-decoration: underline; }
     .error { color: #ff9595; }
     .success { color: #8ef1a7; }
+    dialog { width: min(440px, calc(100% - 32px)); border: 1px solid #4a4a4a; border-radius: 16px; padding: 26px; background: #181818; color: #f7f7f7; box-shadow: 0 20px 70px #000a; }
+    dialog::backdrop { background: #000a; }
+    dialog h2 { margin: 0; font: 400 1.5rem/1.1 Georgia, serif; }
+    dialog .drop { margin-top: 20px; }
+    dialog .close { width: auto; margin-top: 15px; padding: 0; background: none; color: #a8a8a8; font-size: .8rem; font-weight: 400; letter-spacing: 0; text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -48,11 +54,26 @@
       <div id="status" aria-live="polite"></div>
     </section>
     <p class="note">This is a static website. It does not upload, store, or re-encode your file.</p>
+    <button id="restoreLink" class="restore-link" type="button">Restore a previously patched 4tif video</button>
     <footer>
       <div>© 2026 4tif by Atip. Not for resale.</div>
       <div>Discord: <a href="https://discord.com/users/390376808526381059" target="_blank" rel="noopener">@47if</a> · Telegram: <a href="https://t.me/a4tif" target="_blank" rel="noopener">@a4tif</a> · TikTok: <a href="https://www.tiktok.com/@atip.png" target="_blank" rel="noopener">@atip.png</a></div>
     </footer>
   </main>
+  <dialog id="restoreDialog">
+    <h2>Restore a video</h2>
+    <p>Select a video previously patched with 4tif, then choose the setting used when it was patched.</p>
+    <label class="drop" for="undoInput">Choose patched video<input id="undoInput" type="file" accept="video/mp4,video/quicktime,.mp4,.mov"></label>
+    <div class="file" id="undoName">No video selected</div>
+    <div class="modes" aria-label="Original patch setting">
+      <label class="mode"><input type="radio" name="undoFps" value="2" checked>60 FPS patch</label>
+      <label class="mode"><input type="radio" name="undoFps" value="6">120 FPS patch</label>
+    </div>
+    <button id="undoButton" disabled>RESTORE VIDEO</button>
+    <progress id="undoProgress" value="0" max="100" hidden></progress>
+    <div id="undoStatus" aria-live="polite"></div>
+    <button id="closeRestore" class="close" type="button">Cancel</button>
+  </dialog>
   <script>
     const input = document.querySelector('#videoInput');
     const dropZone = document.querySelector('#dropZone');
@@ -60,7 +81,15 @@
     const patchButton = document.querySelector('#patchButton');
     const progress = document.querySelector('#progress');
     const status = document.querySelector('#status');
+    const restoreDialog = document.querySelector('#restoreDialog');
+    const restoreLink = document.querySelector('#restoreLink');
+    const undoInput = document.querySelector('#undoInput');
+    const undoName = document.querySelector('#undoName');
+    const undoButton = document.querySelector('#undoButton');
+    const undoProgress = document.querySelector('#undoProgress');
+    const undoStatus = document.querySelector('#undoStatus');
     let selectedFile;
+    let undoFile;
 
     function selectFile(file) {
       if (!file) return;
@@ -77,9 +106,21 @@
     ['dragenter', 'dragover'].forEach(event => dropZone.addEventListener(event, e => { e.preventDefault(); dropZone.classList.add('over'); }));
     ['dragleave', 'drop'].forEach(event => dropZone.addEventListener(event, e => { e.preventDefault(); dropZone.classList.remove('over'); }));
     dropZone.addEventListener('drop', e => selectFile(e.dataTransfer.files[0]));
+    restoreLink.addEventListener('click', () => restoreDialog.showModal());
+    document.querySelector('#closeRestore').addEventListener('click', () => restoreDialog.close());
+    undoInput.addEventListener('change', () => {
+      const file = undoInput.files[0];
+      if (!file) return;
+      if (!/\.(mp4|mov)$/i.test(file.name)) { undoStatus.textContent = 'Choose an MP4 or MOV video.'; undoStatus.className = 'error'; return; }
+      undoFile = file;
+      undoName.textContent = `${file.name} — ${formatBytes(file.size)}`;
+      undoButton.disabled = false;
+      undoStatus.textContent = 'Ready to restore.';
+      undoStatus.className = '';
+    });
 
     // ISO Base Media File Format parser. Patches the same mvhd/mdhd timing fields as the desktop app.
-    function patchMovieHeaders(bytes, scaleFactor) {
+    function patchMovieHeaders(bytes, scaleFactor, undo) {
       const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
       const decoder = new TextDecoder('latin1');
       let patched = 0;
@@ -95,7 +136,7 @@
           if (size === 0) size = end - offset;
           if (size < header || offset + size > end) break;
           const data = offset + header;
-          if (type === 'mvhd' || type === 'mdhd') patched += patchHeader(view, data, offset + size, scaleFactor);
+          if (type === 'mvhd' || type === 'mdhd') patched += patchHeader(view, data, offset + size, scaleFactor, undo);
           if (containers.has(type)) walk(data + (type === 'meta' ? 4 : 0), offset + size);
           offset += size;
         }
@@ -103,14 +144,16 @@
       walk(0, bytes.length);
       return patched;
     }
-    function patchHeader(view, data, end, scaleFactor) {
+    function patchHeader(view, data, end, scaleFactor, undo) {
       if (data + 4 > end) return 0;
       const version = view.getUint8(data);
       const timescaleOffset = data + (version === 1 ? 20 : 12);
       if (timescaleOffset + 4 > end) return 0;
       const original = view.getUint32(timescaleOffset, false);
       if (!original) return 0;
-      view.setUint32(timescaleOffset, Math.max(1, Math.floor(original / scaleFactor)), false);
+      const adjusted = undo ? original * scaleFactor : Math.floor(original / scaleFactor);
+      if (!adjusted || adjusted > 0xFFFFFFFF) return 0;
+      view.setUint32(timescaleOffset, adjusted, false);
       return 1;
     }
     async function patch() {
@@ -120,7 +163,7 @@
         const bytes = new Uint8Array(await selectedFile.arrayBuffer());
         progress.value = 70; show('Patching video metadata…');
         const scaleFactor = Number(document.querySelector('input[name="fps"]:checked').value);
-        const count = patchMovieHeaders(bytes, scaleFactor);
+        const count = patchMovieHeaders(bytes, scaleFactor, false);
         if (!count) throw new Error('No compatible MP4 timing metadata was found.');
         progress.value = 90; show('Preparing download…');
         const extension = selectedFile.name.match(/\.[^.]+$/)?.[0] || '.mp4';
@@ -130,11 +173,34 @@
         link.download = `${base}_4tif${extension}`;
         link.click();
         setTimeout(() => URL.revokeObjectURL(link.href), 1000);
-        progress.value = 100; show(`Done — patched for ${scaleFactor === 2 ? '60' : '120'} FPS (${count} timing header${count === 1 ? '' : 's'}).`, 'success');
+        const fps = scaleFactor === 2 ? '60' : '120';
+        progress.value = 100; show(`Done — patched ${fps} FPS timing (${count} timing header${count === 1 ? '' : 's'}).`, 'success');
       } catch (error) { show(error.message || 'Could not patch this video.', 'error'); }
       finally { patchButton.disabled = false; setTimeout(() => { progress.hidden = true; progress.value = 0; }, 900); }
     }
     patchButton.addEventListener('click', patch);
+    undoButton.addEventListener('click', async () => {
+      if (!undoFile) return;
+      undoButton.disabled = true; undoProgress.hidden = false; undoProgress.value = 10; undoStatus.textContent = 'Reading video…'; undoStatus.className = '';
+      try {
+        const bytes = new Uint8Array(await undoFile.arrayBuffer());
+        undoProgress.value = 70; undoStatus.textContent = 'Restoring video metadata…';
+        const scaleFactor = Number(document.querySelector('input[name="undoFps"]:checked').value);
+        const count = patchMovieHeaders(bytes, scaleFactor, true);
+        if (!count) throw new Error('No compatible MP4 timing metadata was found.');
+        undoProgress.value = 90; undoStatus.textContent = 'Preparing download…';
+        const extension = undoFile.name.match(/\.[^.]+$/)?.[0] || '.mp4';
+        const inputBase = undoFile.name.slice(0, -extension.length);
+        const base = inputBase.replace(/_4tif$/i, '');
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(new Blob([bytes], { type: undoFile.type || 'video/mp4' }));
+        link.download = `${base}_restored${extension}`;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+        undoProgress.value = 100; undoStatus.textContent = 'Done — restored video downloaded.'; undoStatus.className = 'success';
+      } catch (error) { undoStatus.textContent = error.message || 'Could not restore this video.'; undoStatus.className = 'error'; }
+      finally { undoButton.disabled = false; setTimeout(() => { undoProgress.hidden = true; undoProgress.value = 0; }, 900); }
+    });
   </script>
 </body>
 </html>

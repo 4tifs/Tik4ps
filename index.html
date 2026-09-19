@@ -1,206 +1,174 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>4tif Video Patcher</title>
-  <style>
-    :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
-    * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: radial-gradient(circle at top, #252525, #0b0b0b 58%); color: #f7f7f7; }
-    main { width: min(560px, calc(100% - 32px)); text-align: center; padding: 48px 22px; }
-    h1 { margin: 0; font: 400 clamp(2.3rem, 8vw, 4rem)/1 Georgia, serif; letter-spacing: .04em; }
-    p { color: #b7b7b7; line-height: 1.55; }
-    .card { margin-top: 30px; padding: 28px; border: 1px solid #3b3b3b; border-radius: 18px; background: #151515; box-shadow: 0 18px 60px #0008; }
-    .drop { display: block; padding: 30px 16px; border: 1px dashed #616161; border-radius: 12px; cursor: pointer; transition: .18s ease; }
-    .drop:hover, .drop.over { border-color: #fff; background: #202020; }
-    input { display: none; }
-    .file { min-height: 22px; margin: 16px 0 20px; color: #ddd; font-size: .92rem; overflow-wrap: anywhere; }
-    .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 0 18px; }
-    .mode { position: relative; display: block; padding: 12px 8px; border: 1px solid #4d4d4d; border-radius: 9px; cursor: pointer; color: #bdbdbd; font-size: .85rem; }
-    .mode:has(input:checked) { border-color: #ededed; background: #292929; color: #fff; }
-    .mode input { position: absolute; opacity: 0; pointer-events: none; }
-    button { width: 100%; border: 0; border-radius: 9px; padding: 13px 18px; cursor: pointer; background: #f4f4f4; color: #111; font-weight: 750; letter-spacing: .05em; }
-    button:disabled { opacity: .42; cursor: not-allowed; }
-    progress { width: 100%; height: 9px; margin-top: 19px; accent-color: #5eea80; }
-    #status, #undoStatus { min-height: 24px; margin: 14px 0 0; font-size: .88rem; }
-    .note { margin-top: 25px; font-size: .8rem; color: #858585; }
-    .restore-link { width: auto; margin-top: 4px; padding: 0; background: none; color: #878787; font-size: .75rem; font-weight: 400; letter-spacing: 0; text-decoration: underline; }
-    footer { margin-top: 30px; color: #8b8b8b; font-size: .78rem; line-height: 1.8; }
-    footer a { color: #d7d7d7; text-decoration: none; }
-    footer a:hover { color: #fff; text-decoration: underline; }
-    .error { color: #ff9595; }
-    .success { color: #8ef1a7; }
-    dialog { width: min(440px, calc(100% - 32px)); border: 1px solid #4a4a4a; border-radius: 16px; padding: 26px; background: #181818; color: #f7f7f7; box-shadow: 0 20px 70px #000a; }
-    dialog::backdrop { background: #000a; }
-    dialog h2 { margin: 0; font: 400 1.5rem/1.1 Georgia, serif; }
-    dialog .drop { margin-top: 20px; }
-    dialog .close { width: auto; margin-top: 15px; padding: 0; background: none; color: #a8a8a8; font-size: .8rem; font-weight: 400; letter-spacing: 0; text-decoration: underline; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>4tif Video Patcher</title>
+<style>
+:root{color-scheme:dark;font-family:Inter,ui-sans-serif,system-ui,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:radial-gradient(circle at top,#252525,#0b0b0b 58%);color:#f7f7f7}
+main{width:min(560px,calc(100% - 32px));text-align:center;padding:48px 22px}
+h1{margin:0;font:400 clamp(2.3rem,8vw,4rem)/1 Georgia,serif;letter-spacing:.04em}
+p{color:#b7b7b7;line-height:1.55}
+.card{margin-top:30px;padding:28px;border:1px solid #3b3b3b;border-radius:18px;background:#151515;box-shadow:0 18px 60px #0008}
+.drop{display:block;padding:30px 16px;border:1px dashed #616161;border-radius:12px;cursor:pointer;transition:.18s ease}
+.drop:hover,.drop.over{border-color:#fff;background:#202020}
+input{display:none}
+.file{min-height:22px;margin:16px 0 20px;color:#ddd;font-size:.92rem;overflow-wrap:anywhere}
+button{width:100%;border:0;border-radius:9px;padding:13px 18px;cursor:pointer;background:#f4f4f4;color:#111;font-weight:750;letter-spacing:.05em}
+button:disabled{opacity:.42;cursor:not-allowed}
+progress{width:100%;height:9px;margin-top:19px;accent-color:#5eea80}
+#status{min-height:24px;margin:14px 0 0;font-size:.88rem}
+.note{margin-top:25px;font-size:.8rem;color:#858585}
+footer{margin-top:30px;color:#8b8b8b;font-size:.78rem;line-height:1.8}
+.error{color:#ff9595}.success{color:#8ef1a7}
+</style>
 </head>
 <body>
-  <main>
-    <h1>4tif</h1>
-    <p>Patch an MP4 or MOV locally. Your video never leaves this device.</p>
-    <section class="card">
-      <label class="drop" id="dropZone" for="videoInput">Choose video or drop it here<input id="videoInput" type="file" accept="video/mp4,video/quicktime,.mp4,.mov"></label>
-      <div class="file" id="fileName">No video selected</div>
-      <div class="modes" aria-label="Video frame rate">
-        <label class="mode"><input type="radio" name="fps" value="2" checked>60 FPS video</label>
-        <label class="mode"><input type="radio" name="fps" value="6">120 FPS video</label>
-      </div>
-      <button id="patchButton" disabled>PATCH VIDEO</button>
-      <progress id="progress" value="0" max="100" hidden></progress>
-      <div id="status" aria-live="polite"></div>
-    </section>
-    <p class="note">This is a static website. It does not upload, store, or re-encode your file.</p>
-    <button id="restoreLink" class="restore-link" type="button">Restore a previously patched 4tif video</button>
-    <footer>
-      <div>© 2026 4tif by Atip. Not for resale.</div>
-      <div>Discord: <a href="https://discord.com/users/390376808526381059" target="_blank" rel="noopener">@47if</a> · Telegram: <a href="https://t.me/a4tif" target="_blank" rel="noopener">@a4tif</a> · TikTok: <a href="https://www.tiktok.com/@atip.png" target="_blank" rel="noopener">@atip.png</a></div>
-    </footer>
-  </main>
-  <dialog id="restoreDialog">
-    <h2>Restore a video</h2>
-    <p>Select a video previously patched with 4tif, then choose the setting used when it was patched.</p>
-    <label class="drop" for="undoInput">Choose patched video<input id="undoInput" type="file" accept="video/mp4,video/quicktime,.mp4,.mov"></label>
-    <div class="file" id="undoName">No video selected</div>
-    <div class="modes" aria-label="Original patch setting">
-      <label class="mode"><input type="radio" name="undoFps" value="2" checked>60 FPS patch</label>
-      <label class="mode"><input type="radio" name="undoFps" value="6">120 FPS patch</label>
-    </div>
-    <button id="undoButton" disabled>RESTORE VIDEO</button>
-    <progress id="undoProgress" value="0" max="100" hidden></progress>
-    <div id="undoStatus" aria-live="polite"></div>
-    <button id="closeRestore" class="close" type="button">Cancel</button>
-  </dialog>
-  <script>
-    const input = document.querySelector('#videoInput');
-    const dropZone = document.querySelector('#dropZone');
-    const fileName = document.querySelector('#fileName');
-    const patchButton = document.querySelector('#patchButton');
-    const progress = document.querySelector('#progress');
-    const status = document.querySelector('#status');
-    const restoreDialog = document.querySelector('#restoreDialog');
-    const restoreLink = document.querySelector('#restoreLink');
-    const undoInput = document.querySelector('#undoInput');
-    const undoName = document.querySelector('#undoName');
-    const undoButton = document.querySelector('#undoButton');
-    const undoProgress = document.querySelector('#undoProgress');
-    const undoStatus = document.querySelector('#undoStatus');
-    let selectedFile;
-    let undoFile;
+<main>
+<h1>4tif</h1>
+<p>Patch an MP4 or MOV locally. Your video never leaves this device.</p>
+<section class="card">
+<label class="drop" id="drop" for="file">Choose video or drop it here
+<input id="file" type="file" accept="video/mp4,.mp4">
+</label>
+<div class="file" id="name">No video selected</div>
+<button id="patch" disabled>PATCH VIDEO</button>
+<progress id="progress" value="0" max="100" hidden></progress>
+<div id="status"></div>
+</section>
+<p class="note">This is a static website. It does not upload, store, or re-encode your file.</p>
+<footer>© 2026 4tif by Atip. Not for resale.</footer>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+let selected=null;
+const file=$('#file'), drop=$('#drop'), name=$('#name'), btn=$('#patch'), prog=$('#progress'), status=$('#status');
 
-    function selectFile(file) {
-      if (!file) return;
-      const valid = /\.(mp4|mov)$/i.test(file.name);
-      if (!valid) { show('Choose an MP4 or MOV video.', 'error'); return; }
-      selectedFile = file;
-      fileName.textContent = `${file.name} — ${formatBytes(file.size)}`;
-      patchButton.disabled = false;
-      show('Ready to patch.');
-    }
-    function show(message, kind = '') { status.textContent = message; status.className = kind; }
-    function formatBytes(size) { return size < 1048576 ? `${(size / 1024).toFixed(1)} KB` : `${(size / 1048576).toFixed(1)} MB`; }
-    input.addEventListener('change', () => selectFile(input.files[0]));
-    ['dragenter', 'dragover'].forEach(event => dropZone.addEventListener(event, e => { e.preventDefault(); dropZone.classList.add('over'); }));
-    ['dragleave', 'drop'].forEach(event => dropZone.addEventListener(event, e => { e.preventDefault(); dropZone.classList.remove('over'); }));
-    dropZone.addEventListener('drop', e => selectFile(e.dataTransfer.files[0]));
-    restoreLink.addEventListener('click', () => restoreDialog.showModal());
-    document.querySelector('#closeRestore').addEventListener('click', () => restoreDialog.close());
-    undoInput.addEventListener('change', () => {
-      const file = undoInput.files[0];
-      if (!file) return;
-      if (!/\.(mp4|mov)$/i.test(file.name)) { undoStatus.textContent = 'Choose an MP4 or MOV video.'; undoStatus.className = 'error'; return; }
-      undoFile = file;
-      undoName.textContent = `${file.name} — ${formatBytes(file.size)}`;
-      undoButton.disabled = false;
-      undoStatus.textContent = 'Ready to restore.';
-      undoStatus.className = '';
-    });
+function fmt(n){return n<1048576?(n/1024).toFixed(1)+' KB':(n/1048576).toFixed(1)+' MB'}
+function show(s,c=''){status.textContent=s;status.className=c}
+function choose(f){
+ if(!f)return;
+ if(!/\.mp4$/i.test(f.name)){show('Choose an MP4 video.','error');return}
+ selected=f;name.textContent=`${f.name} — ${fmt(f.size)}`;btn.disabled=false;show('Ready to patch.')
+}
+file.onchange=()=>choose(file.files[0]);
+['dragenter','dragover'].forEach(e=>drop.addEventListener(e,x=>{x.preventDefault();drop.classList.add('over')}));
+['dragleave','drop'].forEach(e=>drop.addEventListener(e,x=>{x.preventDefault();drop.classList.remove('over')}));
+drop.addEventListener('drop',e=>choose(e.dataTransfer.files[0]));
 
-    // ISO Base Media File Format parser. Patches the same mvhd/mdhd timing fields as the desktop app.
-    function patchMovieHeaders(bytes, scaleFactor, undo) {
-      const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-      const decoder = new TextDecoder('latin1');
-      let patched = 0;
-      const containers = new Set(['moov', 'trak', 'mdia', 'minf', 'stbl', 'edts', 'udta', 'meta', 'dinf']);
-      function typeAt(offset) { return decoder.decode(bytes.subarray(offset + 4, offset + 8)); }
-      function walk(start, end) {
-        let offset = start;
-        while (offset + 8 <= end) {
-          let size = view.getUint32(offset, false);
-          const type = typeAt(offset);
-          let header = 8;
-          if (size === 1) { if (offset + 16 > end) break; size = Number(view.getBigUint64(offset + 8, false)); header = 16; }
-          if (size === 0) size = end - offset;
-          if (size < header || offset + size > end) break;
-          const data = offset + header;
-          if (type === 'mvhd' || type === 'mdhd') patched += patchHeader(view, data, offset + size, scaleFactor, undo);
-          if (containers.has(type)) walk(data + (type === 'meta' ? 4 : 0), offset + size);
-          offset += size;
-        }
-      }
-      walk(0, bytes.length);
-      return patched;
-    }
-    function patchHeader(view, data, end, scaleFactor, undo) {
-      if (data + 4 > end) return 0;
-      const version = view.getUint8(data);
-      const timescaleOffset = data + (version === 1 ? 20 : 12);
-      if (timescaleOffset + 4 > end) return 0;
-      const original = view.getUint32(timescaleOffset, false);
-      if (!original) return 0;
-      const adjusted = undo ? original * scaleFactor : Math.floor(original / scaleFactor);
-      if (!adjusted || adjusted > 0xFFFFFFFF) return 0;
-      view.setUint32(timescaleOffset, adjusted, false);
-      return 1;
-    }
-    async function patch() {
-      if (!selectedFile) return;
-      patchButton.disabled = true; progress.hidden = false; progress.value = 10; show('Reading video…');
-      try {
-        const bytes = new Uint8Array(await selectedFile.arrayBuffer());
-        progress.value = 70; show('Patching video metadata…');
-        const scaleFactor = Number(document.querySelector('input[name="fps"]:checked').value);
-        const count = patchMovieHeaders(bytes, scaleFactor, false);
-        if (!count) throw new Error('No compatible MP4 timing metadata was found.');
-        progress.value = 90; show('Preparing download…');
-        const extension = selectedFile.name.match(/\.[^.]+$/)?.[0] || '.mp4';
-        const base = selectedFile.name.slice(0, -extension.length);
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(new Blob([bytes], { type: selectedFile.type || 'video/mp4' }));
-        link.download = `${base}_4tif${extension}`;
-        link.click();
-        setTimeout(() => URL.revokeObjectURL(link.href), 1000);
-        const fps = scaleFactor === 2 ? '60' : '120';
-        progress.value = 100; show(`Done — patched ${fps} FPS timing (${count} timing header${count === 1 ? '' : 's'}).`, 'success');
-      } catch (error) { show(error.message || 'Could not patch this video.', 'error'); }
-      finally { patchButton.disabled = false; setTimeout(() => { progress.hidden = true; progress.value = 0; }, 900); }
-    }
-    patchButton.addEventListener('click', patch);
-    undoButton.addEventListener('click', async () => {
-      if (!undoFile) return;
-      undoButton.disabled = true; undoProgress.hidden = false; undoProgress.value = 10; undoStatus.textContent = 'Reading video…'; undoStatus.className = '';
-      try {
-        const bytes = new Uint8Array(await undoFile.arrayBuffer());
-        undoProgress.value = 70; undoStatus.textContent = 'Restoring video metadata…';
-        const scaleFactor = Number(document.querySelector('input[name="undoFps"]:checked').value);
-        const count = patchMovieHeaders(bytes, scaleFactor, true);
-        if (!count) throw new Error('No compatible MP4 timing metadata was found.');
-        undoProgress.value = 90; undoStatus.textContent = 'Preparing download…';
-        const extension = undoFile.name.match(/\.[^.]+$/)?.[0] || '.mp4';
-        const inputBase = undoFile.name.slice(0, -extension.length);
-        const base = inputBase.replace(/_4tif$/i, '');
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(new Blob([bytes], { type: undoFile.type || 'video/mp4' }));
-        link.download = `${base}_restored${extension}`;
-        link.click();
-        setTimeout(() => URL.revokeObjectURL(link.href), 1000);
-        undoProgress.value = 100; undoStatus.textContent = 'Done — restored video downloaded.'; undoStatus.className = 'success';
-      } catch (error) { undoStatus.textContent = error.message || 'Could not restore this video.'; undoStatus.className = 'error'; }
-      finally { undoButton.disabled = false; setTimeout(() => { undoProgress.hidden = true; undoProgress.value = 0; }, 900); }
-    });
-  </script>
+function u32(a,o){return new DataView(a.buffer,a.byteOffset,a.byteLength).getUint32(o,false)}
+function put32(a,o,v){new DataView(a.buffer,a.byteOffset,a.byteLength).setUint32(o,v>>>0,false)}
+function type(a,o){return new TextDecoder('latin1').decode(a.subarray(o+4,o+8))}
+function box(t,p){let a=new Uint8Array(8+p.length);put32(a,0,a.length);a.set(t,4);a.set(p,8);return a}
+const moovT=new TextEncoder().encode('moov'),trakT=new TextEncoder().encode('trak'),
+mdiaT=new TextEncoder().encode('mdia'),minfT=new TextEncoder().encode('minf'),stblT=new TextEncoder().encode('stbl'),
+sttsT=new TextEncoder().encode('stts'),stscT=new TextEncoder().encode('stsc'),stszT=new TextEncoder().encode('stsz'),
+stcoT=new TextEncoder().encode('stco'),tkhdT=new TextEncoder().encode('tkhd'),mdhdT=new TextEncoder().encode('mdhd'),
+hdlrT=new TextEncoder().encode('hdlr'),videT=new TextEncoder().encode('vide'),sounT=new TextEncoder().encode('soun'),
+edtsT=new TextEncoder().encode('edts'),udtaT=new TextEncoder().encode('udta'),metaT=new TextEncoder().encode('meta'),
+ilstT=new TextEncoder().encode('ilst'),dataT=new TextEncoder().encode('data'),toolT=new Uint8Array([0xa9,0x74,0x6f,0x6f]),
+cmtT=new Uint8Array([0xa9,0x63,0x6d,0x74]),nameT=new TextEncoder().encode('name');
+
+function eq(a,b){return a.length===b.length&&a.every((v,i)=>v===b[i])}
+function boxes(a,start,end){
+ let out=[],i=start;
+ while(i+8<=end){
+  let n=u32(a,i),h=8;
+  if(n===1){n=Number(new DataView(a.buffer,a.byteOffset,a.byteLength).getBigUint64(i+8,false));h=16}
+  else if(n===0)n=end-i;
+  if(n<h||i+n>end)throw Error('bad MP4 box');
+  out.push({t:a.slice(i+4,i+8),i,n,h,x:a.slice(i,i+n)});i+=n;
+ }
+ if(i!==end)throw Error('box alignment'); return out
+}
+function child(b,t,idx=0){let a=boxes(b,8,b.length).filter(x=>eq(x.t,t)).map(x=>x.x);if(idx>=a.length)throw Error('missing MP4 box');return a[idx]}
+function rebuild(b,repl=new Map(),remove=[]){
+ let seen=new Map(),parts=[];
+ for(const x of boxes(b,8,b.length)){
+  if(remove.some(t=>eq(t,x.t)))continue;
+  let k=seen.get(new TextDecoder().decode(x.t))||0;seen.set(new TextDecoder().decode(x.t),k+1);
+  parts.push(repl.get((new TextDecoder().decode(x.t))+':'+k)||x.x)
+ }
+ return box(b.slice(4,8),concat(parts))
+}
+function concat(parts){let n=parts.reduce((s,a)=>s+a.length,0),o=new Uint8Array(n),p=0;for(const a of parts){o.set(a,p);p+=a.length}return o}
+
+function sttsRead(b){
+ let p=b.slice(8),n=u32(p,4),a=[];
+ for(let i=0;i<n;i++)a.push([u32(p,8+i*8),u32(p,12+i*8)]);
+ return [p.slice(0,4),a]
+}
+function sttsWrite(v,a){let p=new Uint8Array(8+a.length*8);p.set(v,0);put32(p,4,a.length);a.forEach((x,i)=>{put32(p,8+i*8,x[0]);put32(p,12+i*8,x[1])});return box(sttsT,p)}
+function stscRead(b){let p=b.slice(8),n=u32(p,4),a=[];for(let i=0;i<n;i++)a.push([u32(p,8+i*12),u32(p,12+i*12),u32(p,16+i*12)]);return [p.slice(0,4),a]}
+function stscWrite(v,a){let p=new Uint8Array(8+a.length*12);p.set(v);put32(p,4,a.length);a.forEach((x,i)=>x.forEach((z,j)=>put32(p,8+i*12+j*4,z)));return box(stscT,p)}
+function stcoRead(b){let p=b.slice(8),n=u32(p,4),a=[];for(let i=0;i<n;i++)a.push(u32(p,8+i*4));return [p.slice(0,4),a]}
+function stcoWrite(v,a){let p=new Uint8Array(8+a.length*4);p.set(v);put32(p,4,a.length);a.forEach((x,i)=>put32(p,8+i*4,x));return box(stcoT,p)}
+function stszRead(b){let p=b.slice(8),ss=u32(p,4),n=u32(p,8);if(ss)return [p.slice(0,4),Array(n).fill(ss)];let a=[];for(let i=0;i<n;i++)a.push(u32(p,12+i*4));return[p.slice(0,4),a]}
+function stszWrite(v,a){let p=new Uint8Array(12+a.length*4);p.set(v);put32(p,4,0);put32(p,8,a.length);a.forEach((x,i)=>put32(p,12+i*4,x));return box(stszT,p)}
+function handler(t){return child(child(t,mdiaT),hdlrT).slice(16,20)}
+
+function dataText(s){let b=new TextEncoder().encode(s),p=new Uint8Array(8+b.length);put32(p,0,1);put32(p,4,0);p.set(b,8);return box(dataT,p)}
+function item(n,s){return box(n,dataText(s))}
+function metaIlst(items){return box(metaT,concat([new Uint8Array(4),box(ilstT,concat(items))]))}
+function siteUdta(){
+ return box(udtaT,concat([
+  metaIlst([item(toolT,'Lavf59.27.100'),item(cmtT,'Patched by compressbase.com')]),
+  metaIlst([box(nameT,dataText('gg/maska')),item(cmtT,'Patched by compressbase.com')])
+ ]))
+}
+function patchAudio(t,delta,synthetic=false,synthOffset=0,synthCount=0,newid=null){
+ t=rebuild(t,new Map(),[edtsT]);
+ let tk=new Uint8Array(child(t,tkhdT));if(newid!==null)put32(tk,20,newid);
+ t=rebuild(t,new Map([['tkhd:0',box(tk.slice(4,8),tk.slice(8))]]));
+ let md=child(t,mdiaT), mdhd=new Uint8Array(child(md,mdhdT)), minf=child(md,minfT), stbl=child(minf,stblT);
+ let [v,tt]=sttsRead(child(stbl,sttsT));if(tt.length&&tt.at(-1)[0]>1)tt.at(-1)[0]-=1;tt.push([1,1001]);if(synthetic)tt.push([synthCount,1]);
+ let total=tt.reduce((s,x)=>s+x[0]*x[1],0);put32(mdhd,24,total);
+ md=rebuild(md,new Map([['mdhd:0',mdhd]]));stbl=rebuild(stbl,new Map([['stts:0',sttsWrite(v,tt)]]));
+ if(synthetic){let [sv,sc]=stscRead(child(stbl,stscT)),chunks=stcoRead(child(stbl,stcoT))[1].length;sc.push([chunks+1,synthCount,1]);stbl=rebuild(stbl,new Map([['stsc:0',stscWrite(sv,sc)]]))}
+ let [zv,ss]=stszRead(child(stbl,stszT));if(synthetic)ss=ss.concat(Array(synthCount).fill(8));stbl=rebuild(stbl,new Map([['stsz:0',stszWrite(zv,ss)]]));
+ let [ov,oo]=stcoRead(child(stbl,stcoT));oo=oo.map(x=>x+delta);if(synthetic)oo.push(synthOffset);stbl=rebuild(stbl,new Map([['stco:0',stcoWrite(ov,oo)]]));
+ minf=rebuild(minf,new Map([['stbl:0',stbl]]));md=rebuild(md,new Map([['minf:0',minf]]));
+ return rebuild(t,new Map([['mdia:0',md]]))
+}
+function patchVideo(t,delta){
+ t=rebuild(t,new Map(),[edtsT]);let md=child(t,mdiaT),minf=child(md,minfT),stbl=child(minf,stblT),[v,oo]=stcoRead(child(stbl,stcoT));
+ stbl=rebuild(stbl,new Map([['stco:0',stcoWrite(v,oo.map(x=>x+delta))]]));
+ return rebuild(t,new Map([['mdia:0',rebuild(md,new Map([['minf:0',rebuild(minf,new Map([['stbl:0',stbl]]))]]))]]))
+}
+function mainPatch(d){
+ const top=boxes(d,0,d.length),mo=top.find(x=>eq(x.t,new TextEncoder().encode('moov'))),md=top.find(x=>eq(x.t,new TextEncoder().encode('mdat')));
+ if(!mo||!md)throw Error('Not a supported MP4 file.');
+ const moov=mo.x,tracks=boxes(moov,8,moov.length).filter(x=>eq(x.t,trakT)).map(x=>x.x);
+ const audio=tracks.find(t=>eq(handler(t),sounT));if(!audio)throw Error('No audio track found.');
+ const stbl=child(child(child(audio,mdiaT),minfT),stblT),real=stszRead(child(stbl,stszT))[1].length,synth=real*9;
+ function make(delta,off){
+  let out=[];for(const x of boxes(moov,8,moov.length)){
+   if(!eq(x.t,trakT)){out.push(x.x);continue}
+   const h=handler(x.x);if(eq(h,videT))out.push(patchVideo(x.x,delta));else if(eq(h,sounT)){out.push(patchAudio(x.x,delta));out.push(patchAudio(x.x,delta,true,off,synth,3))}else out.push(x.x)
+  }
+  out=out.filter(x=>!eq(x.slice(0,4),udtaT));out.push(siteUdta());return box(moovT,concat(out))
+ }
+ let m1=make(0,0),newStart=md.i+m1.length-moov.length,delta=newStart-md.i,so=newStart+md.n,m2=make(delta,so);
+ newStart=md.i+m2.length-moov.length;delta=newStart-md.i;so=newStart+md.n;m2=make(delta,so);
+ const fake=new Uint8Array(8*synth);for(let i=0;i<synth;i++)fake.set([0,0,0,4,0,0,0,0],i*8);
+ return concat([d.slice(0,mo.i),m2,d.slice(mo.i+mo.n),fake])
+}
+
+async function patch(){
+ if(!selected)return;
+ btn.disabled=true;prog.hidden=false;prog.value=10;show('Reading video…');
+ try{
+  const bytes=new Uint8Array(await selected.arrayBuffer());prog.value=45;show('Patching MP4 boxes and audio track…');
+  const out=mainPatch(bytes);prog.value=90;show('Preparing download…');
+  const base=selected.name.replace(/\.[^.]+$/,'');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([out],{type:'video/mp4'}));a.download=base+'_4tif.mp4';a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);prog.value=100;show('Done — patched video downloaded.','success');
+ }catch(e){show(e.message||'Could not patch this video.','error')}
+ finally{btn.disabled=false;setTimeout(()=>{prog.hidden=true;prog.value=0},900)}
+}
+btn.onclick=patch;
+</script>
 </body>
 </html>

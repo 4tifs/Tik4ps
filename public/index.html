@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Tik4ps</title>
+  <title>TikTik4ps</title>
   <link rel="icon" type="image/png" href="icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -465,6 +465,50 @@
       font-variant-numeric: tabular-nums;
     }
 
+    /* Optimize Toggle Card */
+    .opt-toggle-card {
+      margin-top: 14px;
+      padding: 11px 14px;
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 11px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+    .opt-toggle-card:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.16);
+    }
+    .opt-toggle-card input[type="checkbox"] {
+      margin-top: 3px;
+      accent-color: #22c55e;
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+    .opt-toggle-content {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .opt-toggle-title {
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .opt-toggle-desc {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+    
     /* Process Button */
     .btn-process {
       width: 100%;
@@ -476,7 +520,7 @@
       font-weight: 600;
       border: none;
       cursor: pointer;
-      margin-top: 20px;
+      margin-top: 14px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -785,7 +829,7 @@
 
   <!-- Header Navigation -->
   <header>
-    <a href="/" class="logo">4ps<span>/</span></a>
+    <a href="/" class="logo">TikTik4ps<span>/</span></a>
     <nav class="nav-items">
       <button type="button" class="nav-btn" onclick="openModal()">About</button>
 
@@ -831,7 +875,7 @@
   <main>
     <!-- Dynamic Hero -->
     <section class="hero" id="hero-sec">
-      <h1 class="hero-title" id="hero-title">4ps<br><span>The TikTok Method</span></h1>
+      <h1 class="hero-title" id="hero-title">TikTik4ps<br><span>The TikTok Method</span></h1>
       <p class="hero-sub" id="hero-sub">Patch MP4 videos for high quality uploads on TikTok without compression.<br>Processed directly in your browser.</p>
     </section>
 
@@ -919,6 +963,20 @@
             </div>
           </div>
 
+          <!-- Optional Smooth Playback Optimizer -->
+          <label class="opt-toggle-card" for="opt-optimize">
+            <input type="checkbox" id="opt-optimize">
+            <div class="opt-toggle-content">
+              <span class="opt-toggle-title">
+                Optimize file size
+              </span>
+              <span class="opt-toggle-desc">
+                Adapts heavy files to the master visual streaming limit so videos play smoothly without buffering on mobile data.
+              </span>
+            </div>
+          </label>
+
+          <!-- Patch Button -->
           <button type="button" class="btn-process" id="btn-process" onclick="runProcessing()">
             <span>Patch video</span>
             <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
@@ -1017,7 +1075,7 @@
   <!-- Footer -->
   <footer>
     <div class="footer-left">
-      <strong>4ps/</strong>
+      <strong>Tik4ps/</strong>
       <span class="footer-sep">|</span>
       <span>Video Patcher</span>
     </div>
@@ -1030,10 +1088,10 @@
   <div class="modal-backdrop" id="modal-box" onclick="closeModal(event)">
     <div class="modal-card" onclick="event.stopPropagation()">
       <button type="button" class="modal-close" onclick="closeModal()">✕</button>
-      <h3 class="modal-title" id="modal-title">About 4ps</h3>
+      <h3 class="modal-title" id="modal-title">About Tik4ps</h3>
       <div class="modal-subtitle" id="modal-sub">TikTok Video Patcher</div>
       <div class="modal-body" id="modal-body">
-        <p><strong>4ps</strong> patches video files for high quality uploads without compression on TikTok.</p>
+        <p><strong>Tik4ps</strong> patches video files for high quality uploads without compression on TikTok.</p>
         <p>All processing is handled directly in your browser. Your files never leave your device.</p>
         <p><em>Built by 4tif (@47if) — Strictly not for resale.</em></p>
       </div>
@@ -1130,41 +1188,61 @@
       }
 
       selectedFile = file;
-      selectedBytes = new Uint8Array(await file.arrayBuffer());
+      selectedBytes = null;
 
-      // Extract basic video metadata via HTML5 Video element
+      // Set initial metadata immediately
+      videoMetadata = {
+        width: 1920,
+        height: 1080,
+        duration: 0,
+        size: file.size,
+        name: file.name
+      };
+
+      // IMMEDIATELY show specs and button
+      showSelectedState();
+
+      // Read file bytes in background
+      file.arrayBuffer().then(buf => {
+        selectedBytes = new Uint8Array(buf);
+      });
+
+      // Load precise metadata & thumbnail in background
       const videoEl = document.createElement('video');
       videoEl.preload = 'metadata';
-      videoEl.src = URL.createObjectURL(file);
       videoEl.muted = true;
       videoEl.playsInline = true;
+      videoEl.src = URL.createObjectURL(file);
 
       videoEl.onloadedmetadata = () => {
-        videoMetadata = {
-          width: videoEl.videoWidth || 1920,
-          height: videoEl.videoHeight || 1080,
-          duration: videoEl.duration || 0,
-          size: file.size,
-          name: file.name
-        };
-        videoEl.currentTime = Math.min(0.5, videoEl.duration / 2);
+        if (videoEl.videoWidth) videoMetadata.width = videoEl.videoWidth;
+        if (videoEl.videoHeight) videoMetadata.height = videoEl.videoHeight;
+        if (videoEl.duration) videoMetadata.duration = videoEl.duration;
+
+        $('#info-res').textContent = `${videoMetadata.width} × ${videoMetadata.height}`;
+        $('#info-dur').textContent = formatTime(videoMetadata.duration);
+        $('#preview-meta-line').textContent = `${formatBytes(videoMetadata.size)} · ${formatTime(videoMetadata.duration)}`;
+        $('#preview-dur-pill').textContent = formatTime(videoMetadata.duration);
+
+        try {
+          videoEl.currentTime = Math.min(0.5, (videoEl.duration || 1) / 2);
+        } catch (e) {}
       };
 
       videoEl.onseeked = () => {
-        const canvas = $('#video-canvas');
-        canvas.width = 640;
-        canvas.height = 360;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+        try {
+          const canvas = $('#video-canvas');
+          canvas.width = 640;
+          canvas.height = 360;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
 
-        // Also duplicate to done canvas
-        const doneCanvas = $('#video-canvas-done');
-        doneCanvas.width = 640;
-        doneCanvas.height = 360;
-        doneCanvas.getContext('2d').drawImage(canvas, 0, 0);
-
+          const doneCanvas = $('#video-canvas-done');
+          doneCanvas.width = 640;
+          doneCanvas.height = 360;
+          doneCanvas.getContext('2d').drawImage(canvas, 0, 0);
+        } catch (e) {}
         URL.revokeObjectURL(videoEl.src);
-        showSelectedState();
       };
     }
 
@@ -1174,7 +1252,7 @@
       $('#state-info').style.display = 'grid';
 
       // Set clean title
-      $('#hero-title').innerHTML = '4ps<br><span>The TikTok Method</span>';
+      $('#hero-title').innerHTML = 'Tik4ps<br><span>The TikTok Method</span>';
       $('#hero-sub').innerHTML = 'Patch MP4 videos for high quality uploads on TikTok without compression.<br>Processed directly in your browser.';
 
       // Populate preview
@@ -1209,7 +1287,7 @@
       $('#state-complete').style.display = 'none';
       $('#state-drop').style.display = 'flex';
 
-      $('#hero-title').innerHTML = '4ps<br><span>The TikTok Method</span>';
+      $('#hero-title').innerHTML = 'Tik4ps<br><span>The TikTok Method</span>';
       $('#hero-sub').innerHTML = 'Patch MP4 videos for high quality uploads on TikTok without compression.<br>Processed directly in your browser.';
     }
 
@@ -1253,7 +1331,7 @@
 
     // Core Processing & Patching Engine
     async function runProcessing() {
-      if (!selectedFile || !selectedBytes) return;
+      if (!selectedFile) return;
 
       const btn = $('#btn-process');
       const progressBox = $('#progress-box');
@@ -1269,6 +1347,11 @@
       await yieldToUI();
 
       try {
+        if (!selectedBytes) {
+          statusMsg.textContent = 'Loading video bytes...';
+          selectedBytes = new Uint8Array(await selectedFile.arrayBuffer());
+        }
+
         if (!ffmpeg) {
           const { createFFmpeg } = FFmpeg;
           ffmpeg = createFFmpeg({ log: false });
@@ -1277,20 +1360,56 @@
 
         await yieldToUI();
         progressFill.style.width = '35%';
-        statusMsg.textContent = 'Processing video streams...';
+        statusMsg.textContent = 'Analyzing video specifications...';
         await yieldToUI();
 
         ffmpeg.FS('writeFile', 'input.mp4', selectedBytes);
         await yieldToUI();
 
-        await ffmpeg.run(
-          '-y', '-v', 'error',
-          '-i', 'input.mp4',
-          '-map', '0:v:0', '-map', '0:a:0',
-          '-c', 'copy',
-          '-movflags', '+faststart',
-          'remux.mp4'
-        );
+        const shouldOptimize = $('#opt-optimize')?.checked;
+        const durSec = videoMetadata?.duration || 1;
+        const inputBitrateMbps = durSec > 0 ? (selectedFile.size * 8) / (durSec * 1000000) : 20;
+
+        // Netflix BPPF Formula: Target = Width * Height * FPS * 0.14
+        const targetW = Math.min(1080, videoMetadata.width || 1080);
+        const targetH = Math.round(((videoMetadata.height || 1920) * (targetW / (videoMetadata.width || 1080))) / 2) * 2;
+        const isAbove1080p = (videoMetadata.width || 0) > 1080 || (videoMetadata.height || 0) > 1920;
+
+        // Visual saturation ceiling for 1080p60 = ~17.4 Mbps; for 720p60 = ~7.5 Mbps
+        const netflixMasterCeilingMbps = Math.round((targetW * targetH * 60 * 0.14) / 1000000);
+
+        // Only optimize if user requested AND the video is above 1080p OR has bloated bitrate (> 18.5 Mbps)
+        const needsOptimization = shouldOptimize && (isAbove1080p || inputBitrateMbps > (netflixMasterCeilingMbps + 1.5));
+
+        if (needsOptimization) {
+          statusMsg.textContent = `Optimizing streams to ${netflixMasterCeilingMbps} Mbps master ceiling...`;
+          await ffmpeg.run(
+            '-y', '-v', 'error',
+            '-i', 'input.mp4',
+            '-map', '0:v:0', '-map', '0:a:0',
+            '-vf', "scale='min(1080,iw)':-2",
+            '-c:v', 'libx264',
+            '-preset', 'ultrafast',
+            '-crf', '19',
+            '-maxrate', `${netflixMasterCeilingMbps}M`,
+            '-bufsize', `${netflixMasterCeilingMbps * 2}M`,
+            '-c:a', 'aac',
+            '-b:a', '192k',
+            '-movflags', '+faststart',
+            'remux.mp4'
+          );
+        } else {
+          // If already at/below master quality (or unchecked): 100% lossless copy, size NEVER increases
+          statusMsg.textContent = 'Applying lossless bypass patch...';
+          await ffmpeg.run(
+            '-y', '-v', 'error',
+            '-i', 'input.mp4',
+            '-map', '0:v:0', '-map', '0:a:0',
+            '-c', 'copy',
+            '-movflags', '+faststart',
+            'remux.mp4'
+          );
+        }
 
         const remuxData = ffmpeg.FS('readFile', 'remux.mp4');
         ffmpeg.FS('unlink', 'input.mp4');

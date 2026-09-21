@@ -465,6 +465,50 @@
       font-variant-numeric: tabular-nums;
     }
 
+        /* Optimize Toggle Card */
+    .opt-toggle-card {
+      margin-top: 14px;
+      padding: 11px 14px;
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 11px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+    .opt-toggle-card:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.16);
+    }
+    .opt-toggle-card input[type="checkbox"] {
+      margin-top: 3px;
+      accent-color: #22c55e;
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+    .opt-toggle-content {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .opt-toggle-title {
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .opt-toggle-desc {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+    
     /* Process Button */
     .btn-process {
       width: 100%;
@@ -920,6 +964,18 @@
           </div>
 
           <button type="button" class="btn-process" id="btn-process" onclick="runProcessing()">
+                      <!-- Optional Smooth Playback Optimizer -->
+          <label class="opt-toggle-card" for="opt-optimize">
+            <input type="checkbox" id="opt-optimize">
+            <div class="opt-toggle-content">
+              <span class="opt-toggle-title">
+                Optimize file size
+              </span>
+              <span class="opt-toggle-desc">
+                Reduces heavy bitrate with visually lossless quality so videos stream smoothly without lagging or buffering on mobile data.
+              </span>
+            </div>
+          </label>
             <span>Patch video</span>
             <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
           </button>
@@ -1283,14 +1339,33 @@
         ffmpeg.FS('writeFile', 'input.mp4', selectedBytes);
         await yieldToUI();
 
-        await ffmpeg.run(
-          '-y', '-v', 'error',
-          '-i', 'input.mp4',
-          '-map', '0:v:0', '-map', '0:a:0',
-          '-c', 'copy',
-          '-movflags', '+faststart',
-          'remux.mp4'
-        );
+                const shouldOptimize = $('#opt-optimize')?.checked;
+
+        if (shouldOptimize) {
+          statusMsg.textContent = 'Optimizing video streams...';
+          await ffmpeg.run(
+            '-y', '-v', 'error',
+            '-i', 'input.mp4',
+            '-map', '0:v:0', '-map', '0:a:0',
+            '-vf', "scale='min(1080,iw)':-2",
+            '-c:v', 'libx264',
+            '-preset', 'ultrafast',
+            '-crf', '18',
+            '-c:a', 'aac',
+            '-b:a', '192k',
+            '-movflags', '+faststart',
+            'remux.mp4'
+          );
+        } else {
+          await ffmpeg.run(
+            '-y', '-v', 'error',
+            '-i', 'input.mp4',
+            '-map', '0:v:0', '-map', '0:a:0',
+            '-c', 'copy',
+            '-movflags', '+faststart',
+            'remux.mp4'
+          );
+        }
 
         const remuxData = ffmpeg.FS('readFile', 'remux.mp4');
         ffmpeg.FS('unlink', 'input.mp4');

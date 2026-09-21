@@ -299,6 +299,7 @@ def calc_stts_remainder(moov, audio, orig_moov=None):
     audio_timescale = struct.unpack('>I', md[20:24])[0] if md_version == 1 else struct.unpack('>I', md[12:16])[0]
 
     target_duration = None
+    orig_segment_dur = None
     if orig_moov:
         try:
             o_audio = next((t for t in [x[4] for x in boxes(orig_moov, 8, len(orig_moov)) if x[0] == b'trak'] if get_handler(t) == b'soun'), None)
@@ -321,12 +322,15 @@ def calc_stts_remainder(moov, audio, orig_moov=None):
                 net_dur = max(0, play_dur - empty_dur)
                 scaled = net_dur * o_a_ts
                 target_duration = (scaled + o_mv_ts // 2) // o_mv_ts + media_time
+                if play_dur > 0 and play_dur < 4000000000:
+                    orig_segment_dur = -(-play_dur * mv_timescale // o_mv_ts)
         except Exception:
             pass
 
-    segment_duration = None
-    try:
-        edts = child(audio, b'edts')
+    segment_duration = orig_segment_dur
+    if segment_duration is None:
+        try:
+            edts = child(audio, b'edts')
         elst = child(edts, b'elst')
         ep = elst[8:]
         elst_version = ep[0]

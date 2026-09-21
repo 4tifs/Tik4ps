@@ -744,7 +744,6 @@
     <a href="/" class="logo">4ps<span>/</span></a>
     <nav class="nav-items">
       <button type="button" class="nav-btn" onclick="openModal('about')">About</button>
-      <button type="button" class="nav-btn" onclick="openModal('docs')">Docs</button>
       <a href="https://discord.com/users/390376808526381059" target="_blank" rel="noopener" class="nav-link">Discord</a>
       <a href="https://tiktok.com/@atip.png" target="_blank" rel="noopener" class="nav-link">TikTok</a>
       <a href="https://t.me/a4tif" target="_blank" rel="noopener" class="nav-link">Telegram</a>
@@ -986,10 +985,10 @@
     <div class="modal-card" onclick="event.stopPropagation()">
       <button type="button" class="modal-close" onclick="closeModal()">✕</button>
       <h3 class="modal-title" id="modal-title">About 4ps</h3>
-      <div class="modal-subtitle" id="modal-sub">MP4 60 FPS Lossless Optimization Utility</div>
+      <div class="modal-subtitle" id="modal-sub">MP4 60 FPS Video Utility</div>
       <div class="modal-body" id="modal-body">
-        <p><strong>4ps</strong> patches MP4 video container atom headers so TikTok's server pipeline ingests at pristine 60 FPS visual quality without downsampling or frame dropping.</p>
-        <p>All video frames and audio packets are copied natively in your browser using WebAssembly. Your videos are never uploaded to any third-party server.</p>
+        <p><strong>4ps</strong> optimizes MP4 video files for high-framerate playback and smooth 60 FPS uploads without quality loss.</p>
+        <p>All processing is handled directly in your browser. Your files never leave your device.</p>
         <p><em>4ps by 4tif — Strictly not for resale.</em></p>
       </div>
       <div class="modal-links" id="modal-links">
@@ -1032,29 +1031,8 @@
     }
 
     // Modal Manager
-    function openModal(type) {
+    function openModal() {
       const modal = $('#modal-box');
-      const title = $('#modal-title');
-      const sub = $('#modal-sub');
-      const body = $('#modal-body');
-
-      if (type === 'about') {
-        title.textContent = 'About 4ps';
-        sub.textContent = 'High-Fidelity 60 FPS Container Engine';
-        body.innerHTML = `
-          <p><strong>4ps</strong> is an in-browser MP4 container optimization engine designed to ensure TikTok's ingestion server preserves 60 FPS smoothness without downscaling or frame dropping.</p>
-          <p>All video and audio streams are copied untouched inside your browser using WebAssembly. No files leave your machine.</p>
-          <p><em>4ps by 4tif — Strictly not for resale.</em></p>
-        `;
-      } else {
-        title.textContent = 'Documentation';
-        sub.textContent = 'How 4ps Container Remuxing Works';
-        body.innerHTML = `
-          <p><strong>1. Local Stream Copy:</strong> WebAssembly FFmpeg repacks video and audio streams directly into a clean container with <code>-c copy -movflags +faststart</code>.</p>
-          <p><strong>2. Timescale & Header Synchronization:</strong> Synchronizes <code>mvhd</code> durations and <code>stts</code> samples, preserving exact millisecond timing and compressor strings.</p>
-          <p><strong>3. Stream Descriptor Ingestion:</strong> Generates TikTok-compatible synthetic track sample descriptors to prevent downstream transcoding downsampling.</p>
-        `;
-      }
       modal.classList.add('open');
     }
 
@@ -1223,7 +1201,7 @@
       btn.innerHTML = `<span style="display:inline-block;animation:spin 1s linear infinite;">⟳</span> <span>Processing...</span>`;
       progressBox.style.display = 'flex';
       progressFill.style.width = '10%';
-      statusMsg.textContent = 'Initializing in-browser WebAssembly engine...';
+      statusMsg.textContent = 'Initializing engine...';
 
       await yieldToUI();
 
@@ -1236,7 +1214,7 @@
 
         await yieldToUI();
         progressFill.style.width = '35%';
-        statusMsg.textContent = 'Remuxing video streams locally (no re-encode)...';
+        statusMsg.textContent = 'Processing video streams...';
         await yieldToUI();
 
         ffmpeg.FS('writeFile', 'input.mp4', selectedBytes);
@@ -1257,7 +1235,7 @@
         await yieldToUI();
 
         progressFill.style.width = '65%';
-        statusMsg.textContent = 'Calculating 60 FPS & quality container patches...';
+        statusMsg.textContent = 'Optimizing container for 60 FPS...';
         await yieldToUI();
 
         const { moov, mdatStart, mdatSize } = parseTopBoxes(remuxData);
@@ -1312,7 +1290,7 @@
         const synthCount = resData.synth_count;
 
         progressFill.style.width = '85%';
-        statusMsg.textContent = 'Assembling final optimized MP4...';
+        statusMsg.textContent = 'Finalizing video...';
         await yieldToUI();
 
         const fakeBytes = new Uint8Array(synthCount * 8);

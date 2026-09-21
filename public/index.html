@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>4ps</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Load FFmpeg WASM v0.11.6 -->
+  <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #09090b url('background.png') no-repeat center center fixed;
+      background-size: cover;
+      color: #f7f7f7;
+      position: relative;
+      overflow-x: hidden;
+      padding: 24px 0;
+    }
+    /* Ambient frosted glass backdrop over custom background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(14, 14, 18, 0.65) 0%, rgba(8, 8, 10, 0.82) 100%);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      z-index: 0;
+    }
+    main {
+      position: relative;
+      z-index: 1;
+      width: min(560px, calc(100% - 32px));
+      text-align: center;
+      padding: 20px 0;
+    }
+    h1 {
+      margin: 0;
+      font: 400 clamp(2.3rem, 7.5vw, 3.8rem)/1.1 Georgia, 'Times New Roman', serif;
+      letter-spacing: .03em;
+      background: linear-gradient(180deg, #ffffff 40%, #c4c4c4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    p.subtitle {
+      color: #b7b7b7;
+      line-height: 1.55;
+      font-size: 0.96rem;
+      margin-top: 10px;
+    }
+    .card {
+      margin-top: 26px;
+      padding: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      background: rgba(18, 18, 22, 0.6);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+    .drop {
+      display: block;
+      padding: 36px 16px;
+      border: 1.5px dashed rgba(255, 255, 255, 0.22);
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: rgba(255, 255, 255, 0.02);
+      color: #e2e8f0;
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+    .drop:hover, .drop.over {
+      border-color: #ffffff;
+      background: rgba(255, 255, 255, 0.07);
+      transform: translateY(-1px);
+    }
+    input[type="file"] {
+      display: none;
+    }
+    .file {
+      min-height: 22px;
+      margin: 18px 0 20px;
+      color: #e2e8f0;
+      font-size: 0.92rem;
+      font-weight: 500;
+      overflow-wrap: anywhere;
+    }
+    button {
+      width: 100%;
+      border: 0;
+      border-radius: 10px;
+      padding: 14px 18px;
+      cursor: pointer;
+      background: #f4f4f4;
+      color: #111;
+      font-weight: 750;
+      font-size: 0.95rem;
+      letter-spacing: .05em;
+      transition: all 0.18s ease;
+      box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
+    }
+    button:hover:not(:disabled) {
+      background: #ffffff;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(255, 255, 255, 0.25);
+    }
+    button:disabled {
+      opacity: .42;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    progress {
+      width: 100%;
+      height: 9px;
+      margin-top: 19px;
+      accent-color: #5eea80;
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+    #status {
+      min-height: 24px;
+      margin: 14px 0 0;
+      font-size: 0.88rem;
+    }
+    .note {
+      margin-top: 24px;
+      font-size: 0.82rem;
+      color: #858585;
+      line-height: 1.5;
+    }
+    .contacts {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 26px;
+    }
+    .contact-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 15px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 9999px;
+      color: #cbd5e1;
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(10px);
+    }
+    .contact-link svg {
+      width: 15px;
+      height: 15px;
+      fill: currentColor;
+    }
+    .contact-link:hover {
+      background: rgba(255, 255, 255, 0.13);
+      border-color: rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+      transform: translateY(-1.5px);
+    }
+    footer {
+      margin-top: 22px;
+      color: #71717a;
+      font-size: 0.78rem;
+      line-height: 1.8;
+    }
+    .error { color: #ff9595; }
+    .success { color: #8ef1a7; font-weight: 600; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>4ps</h1>
+  <p class="subtitle">Optimize MP4 videos for TikTok's 60 FPS ingestion pipeline with original visual quality and zero re-encoding.</p>
+
+  <section class="card">
+    <label class="drop" id="drop" for="file">
+      Choose an MP4 video or drop it here
+      <input id="file" type="file" accept="video/mp4,.mp4">
+    </label>
+    <div class="file" id="name">No video selected</div>
+    <button id="patch" disabled>PATCH VIDEO</button>
+    <progress id="progress" value="0" max="100" hidden></progress>
+    <div id="status"></div>
+  </section>
+
+  <p class="note">Video frames are remuxed locally in your browser. Only lightweight container metadata (~25 KB) is processed to calculate timing and bitrate patches. Your video files are never uploaded or stored on any server.</p>
+
+  <!-- Contacts Section -->
+  <div class="contacts">
+    <a href="https://t.me/a4tif" target="_blank" rel="noopener" class="contact-link">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+      <span>Telegram</span>
+    </a>
+    <a href="https://tiktok.com/@atip.png" target="_blank" rel="noopener" class="contact-link">
+      <svg viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.24 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+      <span>TikTok</span>
+    </a>
+    <a href="https://discord.com/users/390376808526381059" target="_blank" rel="noopener" class="contact-link">
+      <svg viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.894.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+      <span>Discord</span>
+    </a>
+  </div>
+
+  <footer>© 2026 4ps. All rights reserved.</footer>
+</main>
+
+<script>
+  const $ = s => document.querySelector(s);
+  let selected = null;
+  let ffmpeg = null;
+
+  const file = $('#file'), drop = $('#drop'), name = $('#name'), btn = $('#patch'), prog = $('#progress'), status = $('#status');
+
+  function fmt(n) {
+    return n < 1048576 ? (n / 1024).toFixed(1) + ' KB' : (n / 1048576).toFixed(1) + ' MB';
+  }
+
+  function show(s, c = '') {
+    status.textContent = s;
+    status.className = c;
+  }
+
+  function choose(f) {
+    if (!f) return;
+    if (!/\.mp4$/i.test(f.name) && !f.type.includes('mp4')) {
+      show('Please choose an MP4 video file.', 'error');
+      return;
+    }
+    selected = f;
+    name.textContent = `${f.name} — ${fmt(f.size)}`;
+    btn.disabled = false;
+    show('Ready to patch.');
+  }
+
+  file.onchange = () => choose(file.files[0]);
+  ['dragenter', 'dragover'].forEach(e => drop.addEventListener(e, x => { x.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(e => drop.addEventListener(e, x => { x.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', e => choose(e.dataTransfer.files[0]));
+
+  function parseTopBoxes(data) {
+    let i = 0, moov = null, mdatStart = 0, mdatSize = 0;
+    while (i + 8 <= data.length) {
+      let size = (data[i] << 24) | (data[i + 1] << 16) | (data[i + 2] << 8) | data[i + 3];
+      const type = String.fromCharCode(data[i + 4], data[i + 5], data[i + 6], data[i + 7]);
+      if (size === 1) {
+        const view = new DataView(data.buffer, data.byteOffset + i + 8, 8);
+        size = Number(view.getBigUint64(0));
+      } else if (size === 0) {
+        size = data.length - i;
+      }
+      if (type === 'moov') {
+        moov = data.slice(i, i + size);
+      } else if (type === 'mdat') {
+        mdatStart = i;
+        mdatSize = size;
+      }
+      i += size;
+    }
+    return { moov, mdatStart, mdatSize };
+  }
+
+  function uint8ToBase64(bytes) {
+    let binary = '';
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) binary += String.fromCharCode(bytes[i]);
+    return btoa(binary);
+  }
+
+  function base64ToUint8(base64) {
+    const binary = atob(base64);
+    const len = binary.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+    return bytes;
+  }
+
+  async function patch() {
+    if (!selected) return;
+    btn.disabled = true;
+    prog.hidden = false;
+    prog.value = 10;
+    show('Initializing WebAssembly engine...');
+
+    try {
+      if (!ffmpeg) {
+        const { createFFmpeg } = FFmpeg;
+        ffmpeg = createFFmpeg({ log: false });
+        await ffmpeg.load();
+      }
+
+      prog.value = 35;
+      show('Remuxing video streams locally (no re-encode)...');
+      const fileBytes = new Uint8Array(await selected.arrayBuffer());
+      ffmpeg.FS('writeFile', 'input.mp4', fileBytes);
+
+      await ffmpeg.run(
+        '-y', '-v', 'error',
+        '-i', 'input.mp4',
+        '-map', '0:v:0', '-map', '0:a:0',
+        '-c', 'copy',
+        '-movflags', '+faststart',
+        'remux.mp4'
+      );
+
+      const remuxData = ffmpeg.FS('readFile', 'remux.mp4');
+      ffmpeg.FS('unlink', 'input.mp4');
+      ffmpeg.FS('unlink', 'remux.mp4');
+
+      prog.value = 65;
+      show('Calculating 60 FPS & quality container patches...');
+      const { moov, mdatStart, mdatSize } = parseTopBoxes(remuxData);
+      if (!moov || !mdatStart) {
+        throw new Error('Could not parse MP4 atom boxes.');
+      }
+
+      const resp = await fetch('/api/patch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          moov: uint8ToBase64(moov),
+          mdat_start: mdatStart,
+          mdat_size: mdatSize
+        })
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.message || 'Server patch error: ' + resp.statusText);
+      }
+
+      const resData = await resp.json();
+      const patchedMoov = base64ToUint8(resData.patched_moov);
+      const synthCount = resData.synth_count;
+
+      prog.value = 85;
+      show('Assembling final video file...');
+      const fakeBytes = new Uint8Array(synthCount * 8);
+      for (let i = 0; i < synthCount; i++) {
+        fakeBytes[i * 8 + 3] = 4;
+      }
+
+      const finalBlob = new Blob([
+        remuxData.slice(0, 32),
+        patchedMoov,
+        remuxData.slice(mdatStart, mdatStart + mdatSize),
+        fakeBytes
+      ], { type: 'video/mp4' });
+
+      prog.value = 100;
+      const baseName = selected.name.replace(/\.[^.]+$/, '');
+      const downloadName = baseName + '_4ps.mp4';
+
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(finalBlob);
+      a.download = downloadName;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        URL.revokeObjectURL(a.href);
+        document.body.removeChild(a);
+      }, 1500);
+
+      show('Done — patched 60 FPS video downloaded.', 'success');
+
+    } catch (e) {
+      console.error(e);
+      show(e.message || 'Could not patch this video.', 'error');
+    } finally {
+      btn.disabled = false;
+      setTimeout(() => {
+        prog.hidden = true;
+        prog.value = 0;
+      }, 1500);
+    }
+  }
+
+  btn.onclick = patch;
+</script>
+</body>
+</html>

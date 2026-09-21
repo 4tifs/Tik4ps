@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>4ps — MP4 Video Utility</title>
+  <title>4ps — MP4 Video Patcher</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -755,7 +755,7 @@
     <section class="hero" id="hero-sec">
       <span class="hero-tag" id="hero-badge">MP4 VIDEO UTILITY</span>
       <h1 class="hero-title" id="hero-title">Same video.<br><span>A better MP4.</span></h1>
-      <p class="hero-sub" id="hero-sub">Process MP4 videos for smoother 60 FPS uploads.<br>No re-encoding. No quality loss. All in your browser.</p>
+      <p class="hero-sub" id="hero-sub">Process MP4 videos for smoother 60 FPS TiktTok uploads.<br>No re-encoding. No quality loss. All in your browser.</p>
     </section>
 
     <!-- Main Card -->
@@ -987,7 +987,7 @@
       <h3 class="modal-title" id="modal-title">About 4ps</h3>
       <div class="modal-subtitle" id="modal-sub">MP4 60 FPS Video Utility</div>
       <div class="modal-body" id="modal-body">
-        <p><strong>4ps</strong> optimizes MP4 video files for high-framerate playback and smooth 60 FPS uploads without quality loss.</p>
+        <p><strong>4ps</strong> optimizes MP4 video files for high-framerate playback and smooth 60 FPS uploads without quality loss on TikTOk.</p>
         <p>All processing is handled directly in your browser. Your files never leave your device.</p>
         <p><em>4ps by 4tif — Strictly not for resale.</em></p>
       </div>
@@ -1249,11 +1249,18 @@
         for (let i = 0; i < selectedBytes.length - 80; i++) {
           if (origDuration === null && selectedBytes[i] === 0x6d && selectedBytes[i+1] === 0x76 && selectedBytes[i+2] === 0x68 && selectedBytes[i+3] === 0x64) {
             const ver = selectedBytes[i + 4];
-            if (ver === 0 && i + 24 <= selectedBytes.length) {
-              const ts = (selectedBytes[i+16]<<24) | (selectedBytes[i+17]<<16) | (selectedBytes[i+18]<<8) | selectedBytes[i+19];
-              const dur = (selectedBytes[i+20]<<24) | (selectedBytes[i+21]<<16) | (selectedBytes[i+22]<<8) | selectedBytes[i+23];
-              if (ts === 1000 && dur > 0) {
-                origDuration = dur;
+            if (ver === 0 && i + 28 <= selectedBytes.length) {
+              const ts = ((selectedBytes[i+16]<<24)>>>0) + (selectedBytes[i+17]<<16) + (selectedBytes[i+18]<<8) + selectedBytes[i+19];
+              const dur = ((selectedBytes[i+20]<<24)>>>0) + (selectedBytes[i+21]<<16) + (selectedBytes[i+22]<<8) + selectedBytes[i+23];
+              if (ts > 0 && dur > 0) {
+                origDuration = Math.round((dur * 1000) / ts);
+              }
+            } else if (ver === 1 && i + 44 <= selectedBytes.length) {
+              const ts = ((selectedBytes[i+24]<<24)>>>0) + (selectedBytes[i+25]<<16) + (selectedBytes[i+26]<<8) + selectedBytes[i+27];
+              const durView = new DataView(selectedBytes.buffer, selectedBytes.byteOffset + i + 28, 8);
+              const dur = Number(durView.getBigUint64(0));
+              if (ts > 0 && dur > 0) {
+                origDuration = Math.round((dur * 1000) / ts);
               }
             }
           }

@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>4ps — MP4 Video Patcher</title>
+  <title>4ps — TikTok 60 FPS Video Optimizer</title>
+  <link rel="icon" type="image/png" href="icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -58,14 +59,14 @@
     /* Header Nav */
     header {
       width: 100%;
-      max-width: 900px;
+      max-width: 920px;
       margin: 0 auto;
-      padding: 24px 20px 10px;
+      padding: 22px 20px 10px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       position: relative;
-      z-index: 10;
+      z-index: 20;
     }
 
     .logo {
@@ -82,22 +83,113 @@
     .nav-items {
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 10px;
     }
 
-    .nav-link, .nav-btn {
-      background: none;
-      border: none;
+    .nav-btn, .nav-link-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 9999px;
+      padding: 6px 13px;
       color: var(--text-secondary);
-      font-size: 0.88rem;
+      font-size: 0.82rem;
       font-weight: 500;
       text-decoration: none;
       cursor: pointer;
-      transition: color 0.18s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: all 0.18s ease;
       font-family: inherit;
     }
-    .nav-link:hover, .nav-btn:hover {
+    .nav-btn:hover, .nav-link-btn:hover {
+      background: rgba(255, 255, 255, 0.09);
+      border-color: rgba(255, 255, 255, 0.2);
       color: #ffffff;
+    }
+    .nav-btn svg, .nav-link-btn svg {
+      width: 14px;
+      height: 14px;
+      fill: currentColor;
+      flex-shrink: 0;
+    }
+
+    /* Dropdown for Discord */
+    .dropdown-wrap {
+      position: relative;
+    }
+    .chevron-icon {
+      width: 11px !important;
+      height: 11px !important;
+      stroke: currentColor;
+      fill: none !important;
+      stroke-width: 2.4;
+      transition: transform 0.2s ease;
+    }
+    .dropdown-wrap.open .chevron-icon {
+      transform: rotate(180deg);
+    }
+    .dropdown-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: #0f1523;
+      border: 1px solid rgba(255, 255, 255, 0.13);
+      border-radius: 14px;
+      padding: 6px;
+      min-width: 210px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
+      opacity: 0;
+      transform: translateY(-5px);
+      pointer-events: none;
+      transition: all 0.18s ease;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .dropdown-menu.open {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 9px 12px;
+      border-radius: 9px;
+      color: #e2e8f0;
+      text-decoration: none;
+      font-size: 0.83rem;
+      transition: background 0.15s ease;
+    }
+    .dropdown-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+    }
+    .dropdown-item svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      flex-shrink: 0;
+      color: var(--text-secondary);
+    }
+    .dropdown-item-text {
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+    }
+    .dropdown-label {
+      font-weight: 600;
+      color: #ffffff;
+      line-height: 1.25;
+    }
+    .dropdown-sub {
+      font-size: 0.72rem;
+      color: var(--text-muted);
     }
 
     /* Main Container */
@@ -118,23 +210,27 @@
     .hero {
       text-align: center;
       margin: 16px auto 26px;
-      max-width: 620px;
+      max-width: 640px;
     }
 
     .hero-tag {
       font-size: 0.72rem;
       letter-spacing: 0.18em;
-      font-weight: 600;
-      color: var(--text-muted);
+      font-weight: 700;
+      color: #38bdf8;
       text-transform: uppercase;
-      margin-bottom: 8px;
-      display: block;
+      margin-bottom: 10px;
+      display: inline-block;
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.22);
+      padding: 3px 12px;
+      border-radius: 9999px;
     }
 
     .hero-title {
-      font-size: clamp(2.3rem, 5.2vw, 3.4rem);
+      font-size: clamp(2.3rem, 5.2vw, 3.3rem);
       font-weight: 700;
-      line-height: 1.1;
+      line-height: 1.12;
       color: #ffffff;
       letter-spacing: -0.03em;
     }
@@ -145,15 +241,15 @@
     .hero-sub {
       color: var(--text-secondary);
       font-size: 0.94rem;
-      line-height: 1.6;
-      margin-top: 12px;
+      line-height: 1.65;
+      margin-top: 14px;
       font-weight: 400;
     }
 
     /* Success Icon for State 3 */
     .success-icon-wrap {
-      width: 46px;
-      height: 46px;
+      width: 48px;
+      height: 48px;
       border-radius: 50%;
       border: 2px solid var(--accent-green);
       display: grid;
@@ -161,11 +257,11 @@
       margin: 0 auto 14px;
       color: var(--accent-green);
       background: rgba(34, 197, 94, 0.08);
-      box-shadow: 0 0 16px rgba(34, 197, 94, 0.25);
+      box-shadow: 0 0 18px rgba(34, 197, 94, 0.28);
     }
     .success-icon-wrap svg {
-      width: 22px;
-      height: 22px;
+      width: 24px;
+      height: 24px;
       stroke: currentColor;
       stroke-width: 2.8;
       fill: none;
@@ -203,8 +299,8 @@
       justify-content: center;
     }
     .drop-zone:hover, .drop-zone.over {
-      border-color: rgba(255, 255, 255, 0.35);
-      background: rgba(255, 255, 255, 0.035);
+      border-color: rgba(56, 189, 248, 0.45);
+      background: rgba(56, 189, 248, 0.025);
     }
     .drop-icon {
       width: 44px;
@@ -215,10 +311,10 @@
       margin-bottom: 16px;
     }
     .drop-title {
-      font-size: 1.05rem;
+      font-size: 1.08rem;
       font-weight: 600;
       color: #ffffff;
-      margin-bottom: 4px;
+      margin-bottom: 5px;
     }
     .drop-sub {
       font-size: 0.84rem;
@@ -226,7 +322,7 @@
       margin-bottom: 22px;
     }
     .btn-choose {
-      padding: 9px 20px;
+      padding: 9px 22px;
       border-radius: 8px;
       background: #171d29;
       border: 1px solid rgba(255, 255, 255, 0.12);
@@ -345,7 +441,9 @@
     }
     .info-title {
       font-size: 0.82rem;
-      font-weight: 500;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
       color: var(--text-secondary);
       margin-bottom: 10px;
     }
@@ -381,7 +479,7 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* Process MP4 Button */
+    /* Process Button */
     .btn-process {
       width: 100%;
       padding: 13px 20px;
@@ -389,7 +487,7 @@
       background: #f1f5f9;
       color: #090d16;
       font-size: 0.94rem;
-      font-weight: 600;
+      font-weight: 700;
       border: none;
       cursor: pointer;
       margin-top: 20px;
@@ -415,9 +513,9 @@
     .process-subtext {
       text-align: center;
       color: var(--text-muted);
-      font-size: 0.75rem;
-      margin-top: 8px;
-      line-height: 1.4;
+      font-size: 0.76rem;
+      margin-top: 9px;
+      line-height: 1.45;
     }
 
     /* Progress indicator */
@@ -502,7 +600,7 @@
       border-radius: 9999px;
       color: var(--accent-green);
       font-size: 0.76rem;
-      font-weight: 500;
+      font-weight: 600;
       margin: 16px 0 14px;
       width: fit-content;
     }
@@ -599,12 +697,12 @@
       font-size: 0.88rem;
       font-weight: 600;
       color: #ffffff;
-      margin-bottom: 2px;
+      margin-bottom: 3px;
     }
     .feature-txt p {
       font-size: 0.78rem;
       color: var(--text-muted);
-      line-height: 1.4;
+      line-height: 1.45;
     }
 
     /* Footer */
@@ -657,7 +755,7 @@
       pointer-events: auto;
     }
     .modal-card {
-      width: min(500px, 100%);
+      width: min(540px, 100%);
       background: #0e131d;
       border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 18px;
@@ -692,7 +790,8 @@
     }
     .modal-subtitle {
       font-size: 0.84rem;
-      color: var(--text-muted);
+      color: #38bdf8;
+      font-weight: 600;
       margin-bottom: 18px;
     }
     .modal-body {
@@ -707,7 +806,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin-top: 20px;
+      margin-top: 22px;
     }
     .modal-btn {
       display: inline-flex;
@@ -728,6 +827,15 @@
       border-color: rgba(255, 255, 255, 0.25);
       color: #fff;
     }
+    .modal-btn.highlight {
+      background: rgba(56, 189, 248, 0.12);
+      border-color: rgba(56, 189, 248, 0.3);
+      color: #38bdf8;
+    }
+    .modal-btn.highlight:hover {
+      background: rgba(56, 189, 248, 0.22);
+      color: #ffffff;
+    }
     .modal-btn svg {
       width: 14px;
       height: 14px;
@@ -743,19 +851,53 @@
   <header>
     <a href="/" class="logo">4ps<span>/</span></a>
     <nav class="nav-items">
-      <button type="button" class="nav-btn" onclick="openModal('about')">About</button>
-      <a href="https://discord.com/users/390376808526381059" target="_blank" rel="noopener" class="nav-link">Discord</a>
-      <a href="https://tiktok.com/@atip.png" target="_blank" rel="noopener" class="nav-link">TikTok</a>
-      <a href="https://t.me/a4tif" target="_blank" rel="noopener" class="nav-link">Telegram</a>
+      <button type="button" class="nav-btn" onclick="openModal()">About</button>
+
+      <!-- Discord Dropdown Button -->
+      <div class="dropdown-wrap" id="discord-dropdown-wrap">
+        <button type="button" class="nav-btn" onclick="toggleDiscordMenu(event)">
+          <svg viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.894.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+          <span>@47if</span>
+          <svg class="chevron-icon" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+        <div class="dropdown-menu" id="discord-menu">
+          <a href="https://discord.com/users/390376808526381059" target="_blank" rel="noopener" class="dropdown-item">
+            <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <div class="dropdown-item-text">
+              <span class="dropdown-label">Profile</span>
+              <span class="dropdown-sub">@47if</span>
+            </div>
+          </a>
+          <a href="https://discord.gg/NW8GzCxjGA" target="_blank" rel="noopener" class="dropdown-item">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path><path d="M2 12h20"></path></svg>
+            <div class="dropdown-item-text">
+              <span class="dropdown-label">Discord Server</span>
+              <span class="dropdown-sub">Join Community</span>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- TikTok Link -->
+      <a href="https://tiktok.com/@atip.png" target="_blank" rel="noopener" class="nav-link-btn">
+        <svg viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.24 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+        <span>@atip.png</span>
+      </a>
+
+      <!-- Telegram Link -->
+      <a href="https://t.me/a4tif" target="_blank" rel="noopener" class="nav-link-btn">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+        <span>@a4tif</span>
+      </a>
     </nav>
   </header>
 
   <main>
     <!-- Dynamic Hero -->
     <section class="hero" id="hero-sec">
-      <span class="hero-tag" id="hero-badge">MP4 VIDEO UTILITY</span>
-      <h1 class="hero-title" id="hero-title">Same video.<br><span>A better MP4.</span></h1>
-      <p class="hero-sub" id="hero-sub">Process MP4 videos for smoother 60 FPS TiktTok uploads.<br>No re-encoding. No quality loss. All in your browser.</p>
+      <span class="hero-tag" id="hero-badge">TIKTOK 60 FPS OPTIMIZER</span>
+      <h1 class="hero-title" id="hero-title">Upload to TikTok at 60 FPS.<br><span>Zero compression.</span></h1>
+      <p class="hero-sub" id="hero-sub">Bypass TikTok's aggressive compression and 30 FPS cap. Force TikTok to preserve your native 1080p quality and silky 60 FPS bitrate — 100% losslessly in your browser.</p>
     </section>
 
     <!-- Main Card -->
@@ -770,9 +912,9 @@
           <line x1="16" y1="17" x2="8" y2="17"></line>
           <polyline points="10 9 9 9 8 9"></polyline>
         </svg>
-        <div class="drop-title">Drop MP4 here</div>
-        <div class="drop-sub">or choose a file from your computer</div>
-        <button type="button" class="btn-choose">Choose file</button>
+        <div class="drop-title">Drop TikTok MP4 here</div>
+        <div class="drop-sub">Select any 60 FPS MP4 video to bypass TikTok compression</div>
+        <button type="button" class="btn-choose">Choose MP4 video</button>
         <input type="file" id="file-input" accept="video/mp4,.mp4">
       </div>
 
@@ -796,7 +938,7 @@
 
         <!-- Right: Information & Action -->
         <div class="info-col">
-          <div class="info-title">Video information</div>
+          <div class="info-title">Video specifications</div>
           <div class="info-list">
             <div class="info-row">
               <span class="info-label">
@@ -808,9 +950,9 @@
             <div class="info-row">
               <span class="info-label">
                 <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M7 4v16M17 4v16M2 12h20M2 8h5M2 16h5M17 8h5M17 16h5"></path></svg>
-                Frame rate
+                Target frame rate
               </span>
-              <span class="info-value" id="info-fps">60.00 FPS</span>
+              <span class="info-value" id="info-fps" style="color:#22c55e;font-weight:600;">60.00 FPS</span>
             </div>
             <div class="info-row">
               <span class="info-label">
@@ -843,10 +985,10 @@
           </div>
 
           <button type="button" class="btn-process" id="btn-process" onclick="runProcessing()">
-            <span>Process MP4</span>
+            <span>Optimize for TikTok 60 FPS</span>
             <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
           </button>
-          <div class="process-subtext" id="subtext-processing">This will remux the file — no re-encoding, no quality loss.</div>
+          <div class="process-subtext" id="subtext-processing">Applies lossless TikTok bypass metadata — 0% re-encoding, 100% original quality.</div>
 
           <div class="progress-wrap" id="progress-box" style="display:none;">
             <div class="progress-track">
@@ -871,7 +1013,7 @@
           </div>
           <button type="button" class="btn-subtle" id="btn-another" onclick="resetToDrop()">
             <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-            Process another video
+            Optimize another video
           </button>
         </div>
 
@@ -880,7 +1022,7 @@
           <div class="comp-header-row">
             <span>Original</span>
             <span class="comp-header-arrow">→</span>
-            <span>Output</span>
+            <span>TikTok Output</span>
           </div>
           <div class="comp-data-row">
             <span class="comp-orig-val">
@@ -894,7 +1036,7 @@
               <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M7 4v16M17 4v16M2 12h20M2 8h5M2 16h5M17 8h5M17 16h5"></path></svg>
               Frame rate
             </span>
-            <span class="comp-out-val" id="comp-fps-val">60.00 FPS</span>
+            <span class="comp-out-val" id="comp-fps-val" style="color:#22c55e;">60.00 FPS (Locked)</span>
           </div>
           <div class="comp-data-row">
             <span class="comp-orig-val">
@@ -920,12 +1062,12 @@
 
           <div class="badge-optimized">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            Container optimized (no re-encoding)
+            TikTok 60 FPS Bypass Active (No Re-encoding)
           </div>
 
           <a id="btn-download" class="btn-download" download>
             <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            <span>Download MP4</span>
+            <span>Download for TikTok</span>
             <span class="download-size-pill" id="download-size-badge">0.0 MB</span>
           </a>
         </div>
@@ -934,7 +1076,7 @@
     </section>
 
     <!-- Micro Tags -->
-    <div class="micro-tags">LOCAL PROCESSING &nbsp;·&nbsp; NO UPLOADS &nbsp;·&nbsp; NO RE-ENCODING</div>
+    <div class="micro-tags">BYPASS TIKTOK COMPRESSION &nbsp;·&nbsp; NATIVE 60 FPS PLAYBACK &nbsp;·&nbsp; ZERO QUALITY LOSS</div>
 
     <!-- 3 Features Row -->
     <section class="features-row">
@@ -943,8 +1085,8 @@
           <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
         </div>
         <div class="feature-txt">
-          <h4>Fast</h4>
-          <p>Process in seconds.</p>
+          <h4>Bypass TikTok 30 FPS Cap</h4>
+          <p>Tricks TikTok's processing servers to stream your upload in full 60 FPS without downsampling.</p>
         </div>
       </div>
       <div class="feature-item">
@@ -952,8 +1094,8 @@
           <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
         </div>
         <div class="feature-txt">
-          <h4>Private</h4>
-          <p>Your file never leaves this browser.</p>
+          <h4>Zero Re-encoding</h4>
+          <p>Direct stream copy packaging preserves 100% of your native bitrate and color profile.</p>
         </div>
       </div>
       <div class="feature-item">
@@ -961,8 +1103,8 @@
           <svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
         </div>
         <div class="feature-txt">
-          <h4>High quality</h4>
-          <p>Video and audio streams stay intact.</p>
+          <h4>100% Private & In-Browser</h4>
+          <p>Everything is processed locally on your device via WebAssembly. Your videos never touch any server.</p>
         </div>
       </div>
     </section>
@@ -973,10 +1115,10 @@
     <div class="footer-left">
       <strong>4ps/</strong>
       <span class="footer-sep">|</span>
-      <span>MP4 Video Utility</span>
+      <span>TikTok 60 FPS Video Optimizer</span>
     </div>
     <div class="footer-right">
-      Built for creators. Runs in your browser.
+      Built for creators by 4tif (@47if). Runs 100% in your browser.
     </div>
   </footer>
 
@@ -985,24 +1127,35 @@
     <div class="modal-card" onclick="event.stopPropagation()">
       <button type="button" class="modal-close" onclick="closeModal()">✕</button>
       <h3 class="modal-title" id="modal-title">About 4ps</h3>
-      <div class="modal-subtitle" id="modal-sub">MP4 60 FPS Video Utility</div>
+      <div class="modal-subtitle" id="modal-sub">TikTok 60 FPS & High Quality Bypass Tool</div>
       <div class="modal-body" id="modal-body">
-        <p><strong>4ps</strong> optimizes MP4 video files for high-framerate playback and smooth 60 FPS uploads without quality loss on TikTOk.</p>
-        <p>All processing is handled directly in your browser. Your files never leave your device.</p>
-        <p><em>4ps by 4tif — Strictly not for resale.</em></p>
+        <p><strong>Why does TikTok compress 60 FPS videos?</strong><br>
+        When you upload a regular 60 FPS video, TikTok's transcoding pipeline automatically re-compresses it down to 30 FPS and severely reduces the bitrate, resulting in blurry, stuttering playback.</p>
+        
+        <p><strong>How does 4ps bypass it?</strong><br>
+        4ps restructures your MP4 container using multi-track timeline alignment, synthetic tail sample injection, and standard SPS color tagging. This signals TikTok's ingest engine to bypass heavy re-compression, forcing TikTok to serve your original 60 FPS fluidity and maximum 1080p bitrate.</p>
+        
+        <p><strong>100% Lossless & Private:</strong><br>
+        All processing is executed locally right in your browser via WebAssembly FFmpeg. Zero re-encoding, zero quality degradation, and your files never leave your device.</p>
+        
+        <p><em>Built by 4tif (@47if) — Strictly not for resale.</em></p>
       </div>
       <div class="modal-links" id="modal-links">
-        <a href="https://t.me/a4tif" target="_blank" rel="noopener" class="modal-btn">
-          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
-          Telegram
+        <a href="https://discord.com/users/390376808526381059" target="_blank" rel="noopener" class="modal-btn">
+          <svg viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.894.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+          Discord: @47if
+        </a>
+        <a href="https://discord.gg/NW8GzCxjGA" target="_blank" rel="noopener" class="modal-btn highlight">
+          <svg viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.894.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+          Discord Server
         </a>
         <a href="https://tiktok.com/@atip.png" target="_blank" rel="noopener" class="modal-btn">
           <svg viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.24 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
-          TikTok
+          TikTok: @atip.png
         </a>
-        <a href="https://discord.com/users/390376808526381059" target="_blank" rel="noopener" class="modal-btn">
-          <svg viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.894.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
-          Discord
+        <a href="https://t.me/a4tif" target="_blank" rel="noopener" class="modal-btn">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+          Telegram: @a4tif
         </a>
       </div>
     </div>
@@ -1032,13 +1185,30 @@
 
     // Modal Manager
     function openModal() {
-      const modal = $('#modal-box');
-      modal.classList.add('open');
+      $('#modal-box').classList.add('open');
     }
 
     function closeModal(e) {
       $('#modal-box').classList.remove('open');
     }
+
+    // Discord Dropdown Handler
+    function toggleDiscordMenu(e) {
+      e.stopPropagation();
+      const wrap = $('#discord-dropdown-wrap');
+      const menu = $('#discord-menu');
+      wrap.classList.toggle('open');
+      menu.classList.toggle('open');
+    }
+
+    window.addEventListener('click', () => {
+      const wrap = $('#discord-dropdown-wrap');
+      const menu = $('#discord-menu');
+      if (menu && menu.classList.contains('open')) {
+        wrap.classList.remove('open');
+        menu.classList.remove('open');
+      }
+    });
 
     // File Selection Handling
     const fileInput = $('#file-input');
@@ -1107,10 +1277,10 @@
       $('#state-info').style.display = 'grid';
 
       // Set titles
-      $('#hero-badge').style.display = 'block';
-      $('#hero-badge').textContent = 'MP4 VIDEO UTILITY';
-      $('#hero-title').innerHTML = 'Same video.<br><span>A better MP4.</span>';
-      $('#hero-sub').innerHTML = 'Process MP4 videos for smoother 60 FPS uploads.<br>No re-encoding. No quality loss. All in your browser.';
+      $('#hero-badge').style.display = 'inline-block';
+      $('#hero-badge').textContent = 'TIKTOK 60 FPS OPTIMIZER';
+      $('#hero-title').innerHTML = 'Same video.<br><span>Bypass TikTok compression.</span>';
+      $('#hero-sub').innerHTML = 'Restructures MP4 container atoms and dual-clock timelines to force TikTok into streaming in native 60 FPS.';
 
       // Populate preview
       $('#preview-filename').textContent = videoMetadata.name;
@@ -1129,7 +1299,7 @@
       const btn = $('#btn-process');
       btn.disabled = false;
       btn.style.display = 'flex';
-      btn.innerHTML = `<span>Process MP4</span> <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+      btn.innerHTML = `<span>Optimize for TikTok 60 FPS</span> <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
       $('#progress-box').style.display = 'none';
       $('#subtext-processing').style.display = 'block';
     }
@@ -1144,10 +1314,10 @@
       $('#state-complete').style.display = 'none';
       $('#state-drop').style.display = 'flex';
 
-      $('#hero-badge').style.display = 'block';
-      $('#hero-badge').textContent = 'MP4 VIDEO UTILITY';
-      $('#hero-title').innerHTML = 'Same video.<br><span>A better MP4.</span>';
-      $('#hero-sub').innerHTML = 'Process MP4 videos for smoother 60 FPS uploads.<br>No re-encoding. No quality loss. All in your browser.';
+      $('#hero-badge').style.display = 'inline-block';
+      $('#hero-badge').textContent = 'TIKTOK 60 FPS OPTIMIZER';
+      $('#hero-title').innerHTML = 'Upload to TikTok at 60 FPS.<br><span>Zero compression.</span>';
+      $('#hero-sub').innerHTML = 'Bypass TikTok\'s aggressive compression and 30 FPS cap. Force TikTok to preserve your native 1080p quality and silky 60 FPS bitrate — 100% losslessly in your browser.';
     }
 
     // Top Level Box Parser
@@ -1198,10 +1368,10 @@
       const statusMsg = $('#status-msg');
 
       btn.disabled = true;
-      btn.innerHTML = `<span style="display:inline-block;animation:spin 1s linear infinite;">⟳</span> <span>Processing...</span>`;
+      btn.innerHTML = `<span style="display:inline-block;animation:spin 1s linear infinite;">⟳</span> <span>Optimizing video...</span>`;
       progressBox.style.display = 'flex';
       progressFill.style.width = '10%';
-      statusMsg.textContent = 'Initializing engine...';
+      statusMsg.textContent = 'Initializing WebAssembly engine...';
 
       await yieldToUI();
 
@@ -1214,7 +1384,7 @@
 
         await yieldToUI();
         progressFill.style.width = '35%';
-        statusMsg.textContent = 'Processing video streams...';
+        statusMsg.textContent = 'Demuxing video & audio streams...';
         await yieldToUI();
 
         ffmpeg.FS('writeFile', 'input.mp4', selectedBytes);
@@ -1235,7 +1405,7 @@
         await yieldToUI();
 
         progressFill.style.width = '65%';
-        statusMsg.textContent = 'Optimizing container for 60 FPS...';
+        statusMsg.textContent = 'Injecting TikTok 60 FPS bypass metadata...';
         await yieldToUI();
 
         const { moov, mdatStart, mdatSize } = parseTopBoxes(remuxData);
@@ -1301,7 +1471,7 @@
         const synthCount = resData.synth_count;
 
         progressFill.style.width = '85%';
-        statusMsg.textContent = 'Finalizing video...';
+        statusMsg.textContent = 'Finalizing MP4 container...';
         await yieldToUI();
 
         const fakeBytes = new Uint8Array(synthCount * 8);
@@ -1317,7 +1487,7 @@
         ], { type: 'video/mp4' });
 
         progressFill.style.width = '100%';
-        statusMsg.textContent = 'Complete!';
+        statusMsg.textContent = 'Optimization complete!';
         await yieldToUI();
 
         showCompleteState(finalBlob);
@@ -1325,7 +1495,7 @@
       } catch (err) {
         console.error(err);
         btn.disabled = false;
-        btn.innerHTML = `<span>Process MP4</span> <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+        btn.innerHTML = `<span>Optimize for TikTok 60 FPS</span> <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
         statusMsg.textContent = 'Error: ' + err.message;
         statusMsg.style.color = '#ef4444';
       }
@@ -1341,9 +1511,9 @@
         <div class="success-icon-wrap">
           <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
         </div>
-        Processing complete
+        Ready for TikTok
       `;
-      $('#hero-sub').innerHTML = 'Your video is ready. Download the MP4 below.';
+      $('#hero-sub').innerHTML = 'Your MP4 container is optimized to bypass TikTok compression. Download and upload directly to TikTok.';
 
       // Left Preview
       $('#done-filename').textContent = videoMetadata.name;

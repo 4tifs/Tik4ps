@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>4ps - Video Patcher for TikTok</title>
+  <title>4ps — High Quality & 60 FPS Video Patcher</title>
   <link rel="icon" type="image/png" href="icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -228,7 +228,7 @@
     }
 
     .hero-title {
-      font-size: clamp(2.3rem, 5.2vw, 3.3rem);
+      font-size: clamp(2.2rem, 5vw, 3.2rem);
       font-weight: 700;
       line-height: 1.12;
       color: #ffffff;
@@ -241,7 +241,7 @@
     .hero-sub {
       color: var(--text-secondary);
       font-size: 0.94rem;
-      line-height: 1.65;
+      line-height: 1.6;
       margin-top: 14px;
       font-weight: 400;
     }
@@ -755,7 +755,7 @@
       pointer-events: auto;
     }
     .modal-card {
-      width: min(540px, 100%);
+      width: min(520px, 100%);
       background: #0e131d;
       border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 18px;
@@ -895,9 +895,9 @@
   <main>
     <!-- Dynamic Hero -->
     <section class="hero" id="hero-sec">
-      <span class="hero-tag" id="hero-badge">TIKTOK VIDEO PATCHER</span>
-      <h1 class="hero-title" id="hero-title">HQ + 60 FPS.<br><span>The TikTok method.</span></h1>
-      <p class="hero-sub" id="hero-sub">Bypass TikTok's aggressive compression and 30 FPS cap. Force TikTok to preserve your native quality and FPS.</p>
+      <span class="hero-tag" id="hero-badge">HQ + 60 FPS</span>
+      <h1 class="hero-title" id="hero-title">High quality.<br><span>60 FPS method.</span></h1>
+      <p class="hero-sub" id="hero-sub">Preserve native 60 FPS and maximum bitrate on TikTok uploads. Lossless container optimization directly in your browser.</p>
     </section>
 
     <!-- Main Card -->
@@ -913,8 +913,8 @@
           <polyline points="10 9 9 9 8 9"></polyline>
         </svg>
         <div class="drop-title">Drop MP4 here</div>
-        <div class="drop-sub">Select any MP4 video</div>
-        <button type="button" class="btn-choose">Choose MP4 video</button>
+        <div class="drop-sub">Select any video to optimize</div>
+        <button type="button" class="btn-choose">Choose file</button>
         <input type="file" id="file-input" accept="video/mp4,.mp4">
       </div>
 
@@ -985,10 +985,10 @@
           </div>
 
           <button type="button" class="btn-process" id="btn-process" onclick="runProcessing()">
-            <span>Optimize for TikTok 60 FPS</span>
+            <span>Patch MP4</span>
             <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
           </button>
-          <div class="process-subtext" id="subtext-processing">Applies lossless TikTok bypass metadata - 0% re-encoding, 100% original quality.</div>
+          <div class="process-subtext" id="subtext-processing">Lossless stream copy — no re-encoding, zero quality loss.</div>
 
           <div class="progress-wrap" id="progress-box" style="display:none;">
             <div class="progress-track">
@@ -1013,7 +1013,7 @@
           </div>
           <button type="button" class="btn-subtle" id="btn-another" onclick="resetToDrop()">
             <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-            Optimize another video
+            Process another video
           </button>
         </div>
 
@@ -1022,7 +1022,7 @@
           <div class="comp-header-row">
             <span>Original</span>
             <span class="comp-header-arrow">→</span>
-            <span>TikTok Output</span>
+            <span>Output</span>
           </div>
           <div class="comp-data-row">
             <span class="comp-orig-val">
@@ -1036,7 +1036,7 @@
               <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M7 4v16M17 4v16M2 12h20M2 8h5M2 16h5M17 8h5M17 16h5"></path></svg>
               Frame rate
             </span>
-            <span class="comp-out-val" id="comp-fps-val" style="color:#22c55e;">60.00 FPS (Locked)</span>
+            <span class="comp-out-val" id="comp-fps-val" style="color:#22c55e;">60.00 FPS</span>
           </div>
           <div class="comp-data-row">
             <span class="comp-orig-val">
@@ -1062,12 +1062,12 @@
 
           <div class="badge-optimized">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            TikTok 60 FPS Bypass Active (No Re-encoding)
+            Container optimized (no re-encoding)
           </div>
 
           <a id="btn-download" class="btn-download" download>
             <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            <span>Download for TikTok</span>
+            <span>Download MP4</span>
             <span class="download-size-pill" id="download-size-badge">0.0 MB</span>
           </a>
         </div>
@@ -1076,7 +1076,7 @@
     </section>
 
     <!-- Micro Tags -->
-    <div class="micro-tags">BYPASS TIKTOK COMPRESSION &nbsp;·&nbsp; NATIVE FPS PLAYBACK &nbsp;·&nbsp; ZERO QUALITY LOSS</div>
+    <div class="micro-tags">LOCAL PROCESSING &nbsp;·&nbsp; NO RE-ENCODING &nbsp;·&nbsp; ZERO QUALITY LOSS</div>
 
     <!-- 3 Features Row -->
     <section class="features-row">
@@ -1085,8 +1085,8 @@
           <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
         </div>
         <div class="feature-txt">
-          <h4>Bypass TikTok 30 FPS Cap</h4>
-          <p>Tricks TikTok's processing servers to stream your upload in full FPS without downsampling.</p>
+          <h4>Native 60 FPS Playback</h4>
+          <p>Aligns container timing to prevent platforms from downsampling high-framerate video.</p>
         </div>
       </div>
       <div class="feature-item">
@@ -1095,7 +1095,7 @@
         </div>
         <div class="feature-txt">
           <h4>Zero Re-encoding</h4>
-          <p>Direct stream copy packaging preserves 100% of your native bitrate and color profile.</p>
+          <p>Stream copy remuxing preserves 100% of original bitrates, colors, and pixels bit-for-bit.</p>
         </div>
       </div>
       <div class="feature-item">
@@ -1103,8 +1103,8 @@
           <svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
         </div>
         <div class="feature-txt">
-          <h4>100% Private & In-Browser</h4>
-          <p>Everything is processed locally on your device via WebAssembly. Your videos never touch any server.</p>
+          <h4>Private & In-Browser</h4>
+          <p>Processed entirely client-side via WebAssembly. Your files never touch any external server.</p>
         </div>
       </div>
     </section>
@@ -1115,10 +1115,10 @@
     <div class="footer-left">
       <strong>4ps/</strong>
       <span class="footer-sep">|</span>
-      <span>TikTok Video Patcher</span>
+      <span>Video Patcher</span>
     </div>
     <div class="footer-right">
-      Built for creators by 4tif (@47if). Runs 100% in your browser.
+      Built for creators by 4tif (@47if). Runs in your browser.
     </div>
   </footer>
 
@@ -1127,16 +1127,13 @@
     <div class="modal-card" onclick="event.stopPropagation()">
       <button type="button" class="modal-close" onclick="closeModal()">✕</button>
       <h3 class="modal-title" id="modal-title">About 4ps</h3>
-      <div class="modal-subtitle" id="modal-sub">TikTok FPS & High Quality Bypass Tool</div>
+      <div class="modal-subtitle" id="modal-sub">High Quality & 60 FPS Upload Optimizer</div>
       <div class="modal-body" id="modal-body">
-        <p><strong>Why does TikTok compress videos?</strong><br>
-        When you upload a regular 60 FPS video, TikTok's transcoding pipeline automatically re-compresses it down to 30 FPS and severely reduces the bitrate, resulting in blurry, stuttering playback.</p>
+        <p>Social platforms like TikTok routinely compress uploads, capping 60 FPS videos down to 30 FPS and degrading bitrates.</p>
         
-        <p><strong>How does 4ps bypass it?</strong><br>
-        4ps restructures your MP4 container. This signals TikTok's ingest engine to bypass heavy re-compression, forcing TikTok to serve your original FPS fluidity and maximum bitrate.</p>
+        <p><strong>4ps</strong> optimizes the MP4 container structure with multi-track timeline alignment, synthetic tail sample injection, and standard color tagging. This allows high-framerate videos to stream at native fluidity without triggering platform re-compression.</p>
         
-        <p><strong>100% Lossless & Private:</strong><br>
-        All processing is executed locally right in your browser. Zero re-encoding, zero quality degradation, and your files never leave your device.</p>
+        <p>All processing is executed entirely in your browser using WebAssembly. No files are ever uploaded or stored.</p>
         
         <p><em>Built by 4tif (@47if) — Strictly not for resale.</em></p>
       </div>
@@ -1278,9 +1275,9 @@
 
       // Set titles
       $('#hero-badge').style.display = 'inline-block';
-      $('#hero-badge').textContent = 'TIKTOK 60 FPS OPTIMIZER';
-      $('#hero-title').innerHTML = 'Same video.<br><span>Bypass TikTok compression.</span>';
-      $('#hero-sub').innerHTML = 'Restructures MP4 container atoms and dual-clock timelines to force TikTok into streaming in native 60 FPS.';
+      $('#hero-badge').textContent = 'HQ + 60 FPS';
+      $('#hero-title').innerHTML = 'Same video.<br><span>True 60 FPS.</span>';
+      $('#hero-sub').innerHTML = 'Aligns container atoms and timeline metadata to preserve native 60 FPS and bitrates upon upload.';
 
       // Populate preview
       $('#preview-filename').textContent = videoMetadata.name;
@@ -1299,7 +1296,7 @@
       const btn = $('#btn-process');
       btn.disabled = false;
       btn.style.display = 'flex';
-      btn.innerHTML = `<span>Optimize for TikTok 60 FPS</span> <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+      btn.innerHTML = `<span>Patch MP4</span> <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
       $('#progress-box').style.display = 'none';
       $('#subtext-processing').style.display = 'block';
     }
@@ -1315,9 +1312,9 @@
       $('#state-drop').style.display = 'flex';
 
       $('#hero-badge').style.display = 'inline-block';
-      $('#hero-badge').textContent = 'TIKTOK VIDEO PATCHER';
-      $('#hero-title').innerHTML = 'Upload to TikTok at MAX FPS.<br><span>Zero compression.</span>';
-      $('#hero-sub').innerHTML = 'Bypass TikTok\'s aggressive compression and 30 FPS cap. Force TikTok to preserve your native quality and FPS - 100% losslessly in your browser.';
+      $('#hero-badge').textContent = 'HQ + 60 FPS';
+      $('#hero-title').innerHTML = 'High quality.<br><span>60 FPS method.</span>';
+      $('#hero-sub').innerHTML = 'Preserve native 60 FPS and maximum bitrate on TikTok uploads. Lossless container optimization directly in your browser.';
     }
 
     // Top Level Box Parser
@@ -1368,10 +1365,10 @@
       const statusMsg = $('#status-msg');
 
       btn.disabled = true;
-      btn.innerHTML = `<span style="display:inline-block;animation:spin 1s linear infinite;">⟳</span> <span>Optimizing video...</span>`;
+      btn.innerHTML = `<span style="display:inline-block;animation:spin 1s linear infinite;">⟳</span> <span>Patching container...</span>`;
       progressBox.style.display = 'flex';
       progressFill.style.width = '10%';
-      statusMsg.textContent = 'Initializing WebAssembly engine...';
+      statusMsg.textContent = 'Initializing engine...';
 
       await yieldToUI();
 
@@ -1384,7 +1381,7 @@
 
         await yieldToUI();
         progressFill.style.width = '35%';
-        statusMsg.textContent = 'Demuxing video & audio streams...';
+        statusMsg.textContent = 'Processing video streams...';
         await yieldToUI();
 
         ffmpeg.FS('writeFile', 'input.mp4', selectedBytes);
@@ -1405,7 +1402,7 @@
         await yieldToUI();
 
         progressFill.style.width = '65%';
-        statusMsg.textContent = 'Injecting TikTok 60 FPS bypass metadata...';
+        statusMsg.textContent = 'Aligning container atoms...';
         await yieldToUI();
 
         const { moov, mdatStart, mdatSize } = parseTopBoxes(remuxData);
@@ -1471,7 +1468,7 @@
         const synthCount = resData.synth_count;
 
         progressFill.style.width = '85%';
-        statusMsg.textContent = 'Finalizing MP4 container...';
+        statusMsg.textContent = 'Finalizing MP4...';
         await yieldToUI();
 
         const fakeBytes = new Uint8Array(synthCount * 8);
@@ -1487,7 +1484,7 @@
         ], { type: 'video/mp4' });
 
         progressFill.style.width = '100%';
-        statusMsg.textContent = 'Optimization complete!';
+        statusMsg.textContent = 'Complete!';
         await yieldToUI();
 
         showCompleteState(finalBlob);
@@ -1495,7 +1492,7 @@
       } catch (err) {
         console.error(err);
         btn.disabled = false;
-        btn.innerHTML = `<span>Optimize for TikTok 60 FPS</span> <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+        btn.innerHTML = `<span>Patch MP4</span> <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
         statusMsg.textContent = 'Error: ' + err.message;
         statusMsg.style.color = '#ef4444';
       }
@@ -1511,9 +1508,9 @@
         <div class="success-icon-wrap">
           <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
         </div>
-        Ready for TikTok
+        Optimization complete
       `;
-      $('#hero-sub').innerHTML = 'Your MP4 container is optimized to bypass TikTok compression. Download and upload directly to TikTok.';
+      $('#hero-sub').innerHTML = 'Your video is ready with native 60 FPS playback. Download below.';
 
       // Left Preview
       $('#done-filename').textContent = videoMetadata.name;

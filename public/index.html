@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>4ps - TikTok Video Patcher</title>
+  <title>Tik4ps</title>
   <link rel="icon" type="image/png" href="icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -465,50 +465,6 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* Optimize Toggle Card */
-    .opt-toggle-card {
-      margin-top: 14px;
-      padding: 11px 14px;
-      background: rgba(255, 255, 255, 0.025);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 12px;
-      display: flex;
-      align-items: flex-start;
-      gap: 11px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      user-select: none;
-    }
-    .opt-toggle-card:hover {
-      background: rgba(255, 255, 255, 0.05);
-      border-color: rgba(255, 255, 255, 0.16);
-    }
-    .opt-toggle-card input[type="checkbox"] {
-      margin-top: 3px;
-      accent-color: #22c55e;
-      width: 16px;
-      height: 16px;
-      cursor: pointer;
-    }
-    .opt-toggle-content {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    .opt-toggle-title {
-      font-size: 0.84rem;
-      font-weight: 600;
-      color: #f1f5f9;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .opt-toggle-desc {
-      font-size: 0.74rem;
-      color: var(--text-muted);
-      line-height: 1.35;
-    }
-    
     /* Process Button */
     .btn-process {
       width: 100%;
@@ -520,7 +476,7 @@
       font-weight: 600;
       border: none;
       cursor: pointer;
-      margin-top: 14px;
+      margin-top: 20px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -963,20 +919,6 @@
             </div>
           </div>
 
-          <!-- Optional Smooth Playback Optimizer (Placed ABOVE the button) -->
-          <label class="opt-toggle-card" for="opt-optimize">
-            <input type="checkbox" id="opt-optimize">
-            <div class="opt-toggle-content">
-              <span class="opt-toggle-title">
-                Optimize file size
-              </span>
-              <span class="opt-toggle-desc">
-                Reduces heavy bitrate with visually lossless quality so videos stream smoothly without lagging or buffering on mobile data.
-              </span>
-            </div>
-          </label>
-
-          <!-- The Main Patch Video Button -->
           <button type="button" class="btn-process" id="btn-process" onclick="runProcessing()">
             <span>Patch video</span>
             <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
@@ -1188,61 +1130,41 @@
       }
 
       selectedFile = file;
-      selectedBytes = null;
+      selectedBytes = new Uint8Array(await file.arrayBuffer());
 
-      // Set initial metadata immediately
-      videoMetadata = {
-        width: 1920,
-        height: 1080,
-        duration: 0,
-        size: file.size,
-        name: file.name
-      };
-
-      // IMMEDIATELY show the specs screen and button!
-      showSelectedState();
-
-      // Read file bytes in background
-      file.arrayBuffer().then(buf => {
-        selectedBytes = new Uint8Array(buf);
-      });
-
-      // Load precise metadata & thumbnail in background
+      // Extract basic video metadata via HTML5 Video element
       const videoEl = document.createElement('video');
       videoEl.preload = 'metadata';
+      videoEl.src = URL.createObjectURL(file);
       videoEl.muted = true;
       videoEl.playsInline = true;
-      videoEl.src = URL.createObjectURL(file);
 
       videoEl.onloadedmetadata = () => {
-        if (videoEl.videoWidth) videoMetadata.width = videoEl.videoWidth;
-        if (videoEl.videoHeight) videoMetadata.height = videoEl.videoHeight;
-        if (videoEl.duration) videoMetadata.duration = videoEl.duration;
-
-        $('#info-res').textContent = `${videoMetadata.width} × ${videoMetadata.height}`;
-        $('#info-dur').textContent = formatTime(videoMetadata.duration);
-        $('#preview-meta-line').textContent = `${formatBytes(videoMetadata.size)} · ${formatTime(videoMetadata.duration)}`;
-        $('#preview-dur-pill').textContent = formatTime(videoMetadata.duration);
-
-        try {
-          videoEl.currentTime = Math.min(0.5, (videoEl.duration || 1) / 2);
-        } catch (e) {}
+        videoMetadata = {
+          width: videoEl.videoWidth || 1920,
+          height: videoEl.videoHeight || 1080,
+          duration: videoEl.duration || 0,
+          size: file.size,
+          name: file.name
+        };
+        videoEl.currentTime = Math.min(0.5, videoEl.duration / 2);
       };
 
       videoEl.onseeked = () => {
-        try {
-          const canvas = $('#video-canvas');
-          canvas.width = 640;
-          canvas.height = 360;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+        const canvas = $('#video-canvas');
+        canvas.width = 640;
+        canvas.height = 360;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
 
-          const doneCanvas = $('#video-canvas-done');
-          doneCanvas.width = 640;
-          doneCanvas.height = 360;
-          doneCanvas.getContext('2d').drawImage(canvas, 0, 0);
-        } catch (e) {}
+        // Also duplicate to done canvas
+        const doneCanvas = $('#video-canvas-done');
+        doneCanvas.width = 640;
+        doneCanvas.height = 360;
+        doneCanvas.getContext('2d').drawImage(canvas, 0, 0);
+
         URL.revokeObjectURL(videoEl.src);
+        showSelectedState();
       };
     }
 
@@ -1331,7 +1253,7 @@
 
     // Core Processing & Patching Engine
     async function runProcessing() {
-      if (!selectedFile) return;
+      if (!selectedFile || !selectedBytes) return;
 
       const btn = $('#btn-process');
       const progressBox = $('#progress-box');
@@ -1347,11 +1269,6 @@
       await yieldToUI();
 
       try {
-        if (!selectedBytes) {
-          statusMsg.textContent = 'Loading video bytes...';
-          selectedBytes = new Uint8Array(await selectedFile.arrayBuffer());
-        }
-
         if (!ffmpeg) {
           const { createFFmpeg } = FFmpeg;
           ffmpeg = createFFmpeg({ log: false });
@@ -1366,33 +1283,14 @@
         ffmpeg.FS('writeFile', 'input.mp4', selectedBytes);
         await yieldToUI();
 
-        const shouldOptimize = $('#opt-optimize')?.checked;
-
-        if (shouldOptimize) {
-          statusMsg.textContent = 'Optimizing video streams...';
-          await ffmpeg.run(
-            '-y', '-v', 'error',
-            '-i', 'input.mp4',
-            '-map', '0:v:0', '-map', '0:a:0',
-            '-vf', "scale='min(1080,iw)':-2",
-            '-c:v', 'libx264',
-            '-preset', 'ultrafast',
-            '-crf', '18',
-            '-c:a', 'aac',
-            '-b:a', '192k',
-            '-movflags', '+faststart',
-            'remux.mp4'
-          );
-        } else {
-          await ffmpeg.run(
-            '-y', '-v', 'error',
-            '-i', 'input.mp4',
-            '-map', '0:v:0', '-map', '0:a:0',
-            '-c', 'copy',
-            '-movflags', '+faststart',
-            'remux.mp4'
-          );
-        }
+        await ffmpeg.run(
+          '-y', '-v', 'error',
+          '-i', 'input.mp4',
+          '-map', '0:v:0', '-map', '0:a:0',
+          '-c', 'copy',
+          '-movflags', '+faststart',
+          'remux.mp4'
+        );
 
         const remuxData = ffmpeg.FS('readFile', 'remux.mp4');
         ffmpeg.FS('unlink', 'input.mp4');

@@ -1,6 +1,0 @@
-__pycache__/
-*.py[cod]
-*$py.class
-.vercel
-node_modules/
-.DS_Store

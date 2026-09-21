@@ -309,21 +309,29 @@ def calc_stts_remainder(moov, audio, orig_moov=None):
                 o_mdia = child(o_audio, b'mdia')
                 o_mdhd = child(o_mdia, b'mdhd')[8:]
                 o_a_ts = struct.unpack('>I', o_mdhd[12:16])[0] if o_mdhd[0] == 0 else struct.unpack('>I', o_mdhd[20:24])[0]
-                o_elst = child(child(o_audio, b'edts'), b'elst')[8:]
-                o_v = o_elst[0]
-                o_cnt = struct.unpack('>I', o_elst[4:8])[0]
-                if o_v == 1:
-                    o_entries = [(struct.unpack('>Q', o_elst[8+i*20:16+i*20])[0], struct.unpack('>q', o_elst[16+i*20:24+i*20])[0]) for i in range(o_cnt)]
-                else:
-                    o_entries = [(struct.unpack('>I', o_elst[8+i*12:12+i*12])[0], struct.unpack('>i', o_elst[12+i*12:16+i*12])[0]) for i in range(o_cnt)]
-                empty_dur = sum(sd for sd, mt in o_entries if mt < 0)
-                play_dur = sum(sd for sd, mt in o_entries if mt >= 0)
-                media_time = next((mt for sd, mt in o_entries if mt >= 0), 0)
-                net_dur = max(0, play_dur - empty_dur)
-                scaled = net_dur * o_a_ts
-                target_duration = (scaled + o_mv_ts // 2) // o_mv_ts + media_time
-                if play_dur > 0 and play_dur < 4000000000:
-                    orig_segment_dur = -(-play_dur * mv_timescale // o_mv_ts)
+                try:
+                    o_elst = child(child(o_audio, b'edts'), b'elst')[8:]
+                    o_v = o_elst[0]
+                    o_cnt = struct.unpack('>I', o_elst[4:8])[0]
+                    if o_v == 1:
+                        o_entries = [(struct.unpack('>Q', o_elst[8+i*20:16+i*20])[0], struct.unpack('>q', o_elst[16+i*20:24+i*20])[0]) for i in range(o_cnt)]
+                    else:
+                        o_entries = [(struct.unpack('>I', o_elst[8+i*12:12+i*12])[0], struct.unpack('>i', o_elst[12+i*12:16+i*12])[0]) for i in range(o_cnt)]
+                    empty_dur = sum(sd for sd, mt in o_entries if mt < 0)
+                    play_dur = sum(sd for sd, mt in o_entries if mt >= 0)
+                    media_time = next((mt for sd, mt in o_entries if mt >= 0), 0)
+                    net_dur = max(0, play_dur - empty_dur)
+                    scaled = net_dur * o_a_ts
+                    target_duration = (scaled + o_mv_ts // 2) // o_mv_ts + media_time
+                    if play_dur > 0 and play_dur < 4000000000:
+                        orig_segment_dur = -(-play_dur * mv_timescale // o_mv_ts)
+                except Exception:
+                    pass
+                if orig_segment_dur is None:
+                    o_tkhd = child(o_audio, b'tkhd')
+                    o_dur = struct.unpack('>I', o_tkhd[28:32])[0]
+                    if o_dur > 0:
+                        orig_segment_dur = -(-o_dur * mv_timescale // o_mv_ts)
         except Exception:
             pass
 
@@ -331,24 +339,24 @@ def calc_stts_remainder(moov, audio, orig_moov=None):
     if segment_duration is None:
         try:
             edts = child(audio, b'edts')
-        elst = child(edts, b'elst')
-        ep = elst[8:]
-        elst_version = ep[0]
-        entry_count = struct.unpack('>I', ep[4:8])[0]
-        if elst_version == 1:
-            entries = [(struct.unpack('>Q', ep[8+i*20:16+i*20])[0], struct.unpack('>q', ep[16+i*20:24+i*20])[0]) for i in range(entry_count)]
-        else:
-            entries = [(struct.unpack('>I', ep[8+i*12:12+i*12])[0], struct.unpack('>i', ep[12+i*12:16+i*12])[0]) for i in range(entry_count)]
-        segment_duration = next((sd for sd, mt in entries if mt >= 0), None)
-        if target_duration is None:
-            empty_dur = sum(sd for sd, mt in entries if mt < 0)
-            play_dur = sum(sd for sd, mt in entries if mt >= 0)
-            media_time = next((mt for sd, mt in entries if mt >= 0), 0)
-            net_dur = max(0, play_dur - empty_dur)
-            scaled = net_dur * audio_timescale
-            target_duration = (scaled + mv_timescale // 2) // mv_timescale + media_time
-    except Exception:
-        pass
+            elst = child(edts, b'elst')
+            ep = elst[8:]
+            elst_version = ep[0]
+            entry_count = struct.unpack('>I', ep[4:8])[0]
+            if elst_version == 1:
+                entries = [(struct.unpack('>Q', ep[8+i*20:16+i*20])[0], struct.unpack('>q', ep[16+i*20:24+i*20])[0]) for i in range(entry_count)]
+            else:
+                entries = [(struct.unpack('>I', ep[8+i*12:12+i*12])[0], struct.unpack('>i', ep[12+i*12:16+i*12])[0]) for i in range(entry_count)]
+            segment_duration = next((sd for sd, mt in entries if mt >= 0), None)
+            if target_duration is None:
+                empty_dur = sum(sd for sd, mt in entries if mt < 0)
+                play_dur = sum(sd for sd, mt in entries if mt >= 0)
+                media_time = next((mt for sd, mt in entries if mt >= 0), 0)
+                net_dur = max(0, play_dur - empty_dur)
+                scaled = net_dur * audio_timescale
+                target_duration = (scaled + mv_timescale // 2) // mv_timescale + media_time
+        except Exception:
+            pass
 
     stbl = child(child(mdia, b'minf'), b'stbl')
     _, tt = stts_read(child(stbl, b'stts'))
@@ -455,8 +463,9 @@ def patch_moov_payload(moov_bytes, mdat_start, mdat_size, orig_compressor_name=N
         for t, i, n, h, x in boxes(moov, 8, len(moov)):
             if t == b'mvhd':
                 mv = bytearray(x)
-                if orig_duration is not None:
-                    mv[24:28] = struct.pack('>I', orig_duration)
+                v_tk = child(video, b'tkhd')
+                v_dur = struct.unpack('>I', v_tk[28:32])[0]
+                mv[24:28] = struct.pack('>I', max(v_dur, segment_dur))
                 mv[-4:] = struct.pack('>I', 4)
                 outparts.append(bytes(mv))
             elif t == b'trak':
@@ -534,7 +543,9 @@ class handler(BaseHTTPRequestHandler):
                 raise ValueError('Invalid request parameters: moov and mdat_size are required')
 
             moov_bytes = base64.b64decode(moov_b64)
-            patched_moov, synth_count = patch_moov_payload(moov_bytes, mdat_start, mdat_size, orig_cname, orig_duration, orig_moov=orig_moov)
+            patched_moov, synth_count = patch_moov_payload(
+                moov_bytes, mdat_start, mdat_size, orig_cname, orig_duration, orig_moov=orig_moov
+            )
 
             resp_data = {
                 'status': 'success',

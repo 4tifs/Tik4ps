@@ -465,7 +465,7 @@
       font-variant-numeric: tabular-nums;
     }
 
-        /* Optimize Toggle Card */
+    /* Optimize Toggle Card */
     .opt-toggle-card {
       margin-top: 14px;
       padding: 11px 14px;
@@ -520,7 +520,7 @@
       font-weight: 600;
       border: none;
       cursor: pointer;
-      margin-top: 20px;
+      margin-top: 14px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -963,8 +963,7 @@
             </div>
           </div>
 
-          <button type="button" class="btn-process" id="btn-process" onclick="runProcessing()">
-                      <!-- Optional Smooth Playback Optimizer -->
+          <!-- Optional Smooth Playback Optimizer (Placed ABOVE the button) -->
           <label class="opt-toggle-card" for="opt-optimize">
             <input type="checkbox" id="opt-optimize">
             <div class="opt-toggle-content">
@@ -976,6 +975,9 @@
               </span>
             </div>
           </label>
+
+          <!-- The Main Patch Video Button -->
+          <button type="button" class="btn-process" id="btn-process" onclick="runProcessing()">
             <span>Patch video</span>
             <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
           </button>
@@ -1186,41 +1188,61 @@
       }
 
       selectedFile = file;
-      selectedBytes = new Uint8Array(await file.arrayBuffer());
+      selectedBytes = null;
 
-      // Extract basic video metadata via HTML5 Video element
+      // Set initial metadata immediately
+      videoMetadata = {
+        width: 1920,
+        height: 1080,
+        duration: 0,
+        size: file.size,
+        name: file.name
+      };
+
+      // IMMEDIATELY show the specs screen and button!
+      showSelectedState();
+
+      // Read file bytes in background
+      file.arrayBuffer().then(buf => {
+        selectedBytes = new Uint8Array(buf);
+      });
+
+      // Load precise metadata & thumbnail in background
       const videoEl = document.createElement('video');
       videoEl.preload = 'metadata';
-      videoEl.src = URL.createObjectURL(file);
       videoEl.muted = true;
       videoEl.playsInline = true;
+      videoEl.src = URL.createObjectURL(file);
 
       videoEl.onloadedmetadata = () => {
-        videoMetadata = {
-          width: videoEl.videoWidth || 1920,
-          height: videoEl.videoHeight || 1080,
-          duration: videoEl.duration || 0,
-          size: file.size,
-          name: file.name
-        };
-        videoEl.currentTime = Math.min(0.5, videoEl.duration / 2);
+        if (videoEl.videoWidth) videoMetadata.width = videoEl.videoWidth;
+        if (videoEl.videoHeight) videoMetadata.height = videoEl.videoHeight;
+        if (videoEl.duration) videoMetadata.duration = videoEl.duration;
+
+        $('#info-res').textContent = `${videoMetadata.width} × ${videoMetadata.height}`;
+        $('#info-dur').textContent = formatTime(videoMetadata.duration);
+        $('#preview-meta-line').textContent = `${formatBytes(videoMetadata.size)} · ${formatTime(videoMetadata.duration)}`;
+        $('#preview-dur-pill').textContent = formatTime(videoMetadata.duration);
+
+        try {
+          videoEl.currentTime = Math.min(0.5, (videoEl.duration || 1) / 2);
+        } catch (e) {}
       };
 
       videoEl.onseeked = () => {
-        const canvas = $('#video-canvas');
-        canvas.width = 640;
-        canvas.height = 360;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+        try {
+          const canvas = $('#video-canvas');
+          canvas.width = 640;
+          canvas.height = 360;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
 
-        // Also duplicate to done canvas
-        const doneCanvas = $('#video-canvas-done');
-        doneCanvas.width = 640;
-        doneCanvas.height = 360;
-        doneCanvas.getContext('2d').drawImage(canvas, 0, 0);
-
+          const doneCanvas = $('#video-canvas-done');
+          doneCanvas.width = 640;
+          doneCanvas.height = 360;
+          doneCanvas.getContext('2d').drawImage(canvas, 0, 0);
+        } catch (e) {}
         URL.revokeObjectURL(videoEl.src);
-        showSelectedState();
       };
     }
 
@@ -1309,7 +1331,7 @@
 
     // Core Processing & Patching Engine
     async function runProcessing() {
-      if (!selectedFile || !selectedBytes) return;
+      if (!selectedFile) return;
 
       const btn = $('#btn-process');
       const progressBox = $('#progress-box');
@@ -1325,6 +1347,11 @@
       await yieldToUI();
 
       try {
+        if (!selectedBytes) {
+          statusMsg.textContent = 'Loading video bytes...';
+          selectedBytes = new Uint8Array(await selectedFile.arrayBuffer());
+        }
+
         if (!ffmpeg) {
           const { createFFmpeg } = FFmpeg;
           ffmpeg = createFFmpeg({ log: false });
@@ -1339,7 +1366,7 @@
         ffmpeg.FS('writeFile', 'input.mp4', selectedBytes);
         await yieldToUI();
 
-                const shouldOptimize = $('#opt-optimize')?.checked;
+        const shouldOptimize = $('#opt-optimize')?.checked;
 
         if (shouldOptimize) {
           statusMsg.textContent = 'Optimizing video streams...';

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>4ps — TikTok 60 FPS Video Optimizer</title>
+  <title>4ps - Video Patcher for TikTok</title>
   <link rel="icon" type="image/png" href="icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -895,9 +895,9 @@
   <main>
     <!-- Dynamic Hero -->
     <section class="hero" id="hero-sec">
-      <span class="hero-tag" id="hero-badge">TIKTOK 60 FPS OPTIMIZER</span>
-      <h1 class="hero-title" id="hero-title">Upload to TikTok at 60 FPS.<br><span>Zero compression.</span></h1>
-      <p class="hero-sub" id="hero-sub">Bypass TikTok's aggressive compression and 30 FPS cap. Force TikTok to preserve your native 1080p quality and silky 60 FPS bitrate — 100% losslessly in your browser.</p>
+      <span class="hero-tag" id="hero-badge">TIKTOK VIDEO PATCHER</span>
+      <h1 class="hero-title" id="hero-title">HQ + 60 FPS.<br><span>The TikTok method.</span></h1>
+      <p class="hero-sub" id="hero-sub">Bypass TikTok's aggressive compression and 30 FPS cap. Force TikTok to preserve your native quality and FPS.</p>
     </section>
 
     <!-- Main Card -->
@@ -912,8 +912,8 @@
           <line x1="16" y1="17" x2="8" y2="17"></line>
           <polyline points="10 9 9 9 8 9"></polyline>
         </svg>
-        <div class="drop-title">Drop TikTok MP4 here</div>
-        <div class="drop-sub">Select any 60 FPS MP4 video to bypass TikTok compression</div>
+        <div class="drop-title">Drop MP4 here</div>
+        <div class="drop-sub">Select any MP4 video</div>
         <button type="button" class="btn-choose">Choose MP4 video</button>
         <input type="file" id="file-input" accept="video/mp4,.mp4">
       </div>
@@ -988,7 +988,7 @@
             <span>Optimize for TikTok 60 FPS</span>
             <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
           </button>
-          <div class="process-subtext" id="subtext-processing">Applies lossless TikTok bypass metadata — 0% re-encoding, 100% original quality.</div>
+          <div class="process-subtext" id="subtext-processing">Applies lossless TikTok bypass metadata - 0% re-encoding, 100% original quality.</div>
 
           <div class="progress-wrap" id="progress-box" style="display:none;">
             <div class="progress-track">
@@ -1076,7 +1076,7 @@
     </section>
 
     <!-- Micro Tags -->
-    <div class="micro-tags">BYPASS TIKTOK COMPRESSION &nbsp;·&nbsp; NATIVE 60 FPS PLAYBACK &nbsp;·&nbsp; ZERO QUALITY LOSS</div>
+    <div class="micro-tags">BYPASS TIKTOK COMPRESSION &nbsp;·&nbsp; NATIVE FPS PLAYBACK &nbsp;·&nbsp; ZERO QUALITY LOSS</div>
 
     <!-- 3 Features Row -->
     <section class="features-row">
@@ -1086,7 +1086,7 @@
         </div>
         <div class="feature-txt">
           <h4>Bypass TikTok 30 FPS Cap</h4>
-          <p>Tricks TikTok's processing servers to stream your upload in full 60 FPS without downsampling.</p>
+          <p>Tricks TikTok's processing servers to stream your upload in full FPS without downsampling.</p>
         </div>
       </div>
       <div class="feature-item">
@@ -1115,7 +1115,7 @@
     <div class="footer-left">
       <strong>4ps/</strong>
       <span class="footer-sep">|</span>
-      <span>TikTok 60 FPS Video Optimizer</span>
+      <span>TikTok Video Patcher</span>
     </div>
     <div class="footer-right">
       Built for creators by 4tif (@47if). Runs 100% in your browser.
@@ -1127,16 +1127,16 @@
     <div class="modal-card" onclick="event.stopPropagation()">
       <button type="button" class="modal-close" onclick="closeModal()">✕</button>
       <h3 class="modal-title" id="modal-title">About 4ps</h3>
-      <div class="modal-subtitle" id="modal-sub">TikTok 60 FPS & High Quality Bypass Tool</div>
+      <div class="modal-subtitle" id="modal-sub">TikTok FPS & High Quality Bypass Tool</div>
       <div class="modal-body" id="modal-body">
-        <p><strong>Why does TikTok compress 60 FPS videos?</strong><br>
+        <p><strong>Why does TikTok compress videos?</strong><br>
         When you upload a regular 60 FPS video, TikTok's transcoding pipeline automatically re-compresses it down to 30 FPS and severely reduces the bitrate, resulting in blurry, stuttering playback.</p>
         
         <p><strong>How does 4ps bypass it?</strong><br>
-        4ps restructures your MP4 container using multi-track timeline alignment, synthetic tail sample injection, and standard SPS color tagging. This signals TikTok's ingest engine to bypass heavy re-compression, forcing TikTok to serve your original 60 FPS fluidity and maximum 1080p bitrate.</p>
+        4ps restructures your MP4 container. This signals TikTok's ingest engine to bypass heavy re-compression, forcing TikTok to serve your original FPS fluidity and maximum bitrate.</p>
         
         <p><strong>100% Lossless & Private:</strong><br>
-        All processing is executed locally right in your browser via WebAssembly FFmpeg. Zero re-encoding, zero quality degradation, and your files never leave your device.</p>
+        All processing is executed locally right in your browser. Zero re-encoding, zero quality degradation, and your files never leave your device.</p>
         
         <p><em>Built by 4tif (@47if) — Strictly not for resale.</em></p>
       </div>
@@ -1315,9 +1315,9 @@
       $('#state-drop').style.display = 'flex';
 
       $('#hero-badge').style.display = 'inline-block';
-      $('#hero-badge').textContent = 'TIKTOK 60 FPS OPTIMIZER';
-      $('#hero-title').innerHTML = 'Upload to TikTok at 60 FPS.<br><span>Zero compression.</span>';
-      $('#hero-sub').innerHTML = 'Bypass TikTok\'s aggressive compression and 30 FPS cap. Force TikTok to preserve your native 1080p quality and silky 60 FPS bitrate — 100% losslessly in your browser.';
+      $('#hero-badge').textContent = 'TIKTOK VIDEO PATCHER';
+      $('#hero-title').innerHTML = 'Upload to TikTok at MAX FPS.<br><span>Zero compression.</span>';
+      $('#hero-sub').innerHTML = 'Bypass TikTok\'s aggressive compression and 30 FPS cap. Force TikTok to preserve your native quality and FPS - 100% losslessly in your browser.';
     }
 
     // Top Level Box Parser

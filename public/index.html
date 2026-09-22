@@ -418,13 +418,15 @@
     /* STATES 2 & 3: Two Column Layout */
     .two-col-layout {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
       gap: 32px;
       align-items: start;
+      width: 100%;
+      min-width: 0;
     }
     @media (max-width: 720px) {
       .two-col-layout {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
         gap: 20px;
       }
     }
@@ -433,22 +435,37 @@
     .preview-col {
       display: flex;
       flex-direction: column;
+      min-width: 0;
+      width: 100%;
+      overflow: hidden;
     }
     .video-thumb-wrap {
       width: 100%;
-      aspect-ratio: 16/9;
+      max-width: 100%;
+      height: 240px;
       background: #000000;
       border-radius: 12px;
       overflow: hidden;
       position: relative;
       border: 1px solid rgba(255, 255, 255, 0.08);
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    @media (max-width: 640px) {
+      .video-thumb-wrap {
+        height: 210px;
+      }
     }
     .video-thumb-wrap canvas {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
       display: block;
+      border-radius: 6px;
     }
     .duration-pill {
       position: absolute;
@@ -461,9 +478,12 @@
       font-family: ui-monospace, SFMono-Regular, monospace;
       color: #f1f5f9;
       font-weight: 500;
+      z-index: 2;
     }
     .file-meta-block {
       margin-top: 14px;
+      min-width: 0;
+      max-width: 100%;
     }
     .file-name-txt {
       font-size: 0.96rem;
@@ -472,6 +492,7 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      max-width: 100%;
     }
     .file-sub-meta {
       font-size: 0.82rem;
@@ -512,6 +533,8 @@
     .info-col {
       display: flex;
       flex-direction: column;
+      min-width: 0;
+      width: 100%;
     }
     .info-title {
       font-size: 0.82rem;
@@ -818,6 +841,12 @@
       text-align: center;
       margin: 24px 0 6px;
       font-weight: 600;
+    }
+    @media (max-width: 640px) {
+      .micro-tags {
+        font-size: 0.65rem;
+        letter-spacing: 0.08em;
+      }
     }
 
     /* Footer */
@@ -1129,16 +1158,15 @@
           <!-- Optimize file size toggle with Netflix BPPF Formula logic -->
           <div class="optimize-toggle-wrap">
             <label class="toggle-container" for="opt-toggle">
-              <input type="checkbox" id="opt-toggle" checked>
+              <input type="checkbox" id="opt-toggle">
               <div class="toggle-custom-box">
                 <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
               </div>
               <div class="toggle-text-block">
                 <div class="toggle-title-row">
                   <span>Optimize file size</span>
-                  <span class="toggle-tag">Recommended</span>
                 </div>
-                <div class="toggle-desc">Smart bitrate reduction for large files. Files ≤ 18 Mbps are kept 100% untouched.</div>
+                <div class="toggle-desc">Reduces bitrate and resolution for large files. Note: Re-encoding takes longer to process depending on video size.</div>
               </div>
             </label>
           </div>
@@ -1379,17 +1407,32 @@
       };
 
       videoEl.onseeked = () => {
+        const vw = videoEl.videoWidth || 1920;
+        const vh = videoEl.videoHeight || 1080;
+        const aspect = vw / vh;
+
+        // Maintain exact aspect ratio without stretching; max dimension 640px for crisp, lightweight preview
+        let cw, ch;
+        if (aspect >= 1) {
+          cw = Math.min(640, vw);
+          ch = Math.max(1, Math.round(cw / aspect));
+        } else {
+          ch = Math.min(640, vh);
+          cw = Math.max(1, Math.round(ch * aspect));
+        }
+
         const canvas = $('#video-canvas');
-        canvas.width = 640;
-        canvas.height = 360;
+        canvas.width = cw;
+        canvas.height = ch;
         const ctx = canvas.getContext('2d');
-        ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+        ctx.drawImage(videoEl, 0, 0, cw, ch);
 
         // Duplicate to done canvas
         const doneCanvas = $('#video-canvas-done');
-        doneCanvas.width = 640;
-        doneCanvas.height = 360;
-        doneCanvas.getContext('2d').drawImage(canvas, 0, 0);
+        doneCanvas.width = cw;
+        doneCanvas.height = ch;
+        const doneCtx = doneCanvas.getContext('2d');
+        doneCtx.drawImage(canvas, 0, 0);
 
         URL.revokeObjectURL(videoEl.src);
         showSelectedState();
@@ -1400,6 +1443,10 @@
       $('#state-drop').style.display = 'none';
       $('#state-complete').style.display = 'none';
       $('#state-info').style.display = 'grid';
+
+      // Ensure optimize toggle defaults to unchecked
+      const optToggle = $('#opt-toggle');
+      if (optToggle) optToggle.checked = false;
 
       // Set clean title
       $('#hero-title').innerHTML = 'Tik4ps<br><span>The TikTok Method</span>';
@@ -1440,6 +1487,9 @@
       selectedBytes = null;
       videoMetadata = null;
       fileInput.value = '';
+
+      const optToggle = $('#opt-toggle');
+      if (optToggle) optToggle.checked = false;
 
       $('#state-info').style.display = 'none';
       $('#state-complete').style.display = 'none';
@@ -1578,7 +1628,7 @@
       try {
         // Evaluate Smart Bitrate Optimization (Netflix BPPF formula)
         const optToggle = $('#opt-toggle');
-        const isOptChecked = optToggle ? optToggle.checked : true;
+        const isOptChecked = optToggle ? optToggle.checked : false;
 
         const durSec = videoMetadata.duration > 0 ? videoMetadata.duration : 1;
         const currentBitrateMbps = (videoMetadata.size * 8) / (durSec * 1000000);

@@ -513,56 +513,100 @@ def patch_moov_payload(moov_bytes, mdat_start, mdat_size, orig_compressor_name=N
     final_moov = build(delta, synth_offset)
     return final_moov, synth
 
+
+from urllib.parse import urlparse
+
+ALLOWED_HOSTS = {'tik4ps.vercel.app', 'localhost', '127.0.0.1'}
+
+def is_client_allowed(headers):
+    origin = headers.get('Origin', '')
+    referer = headers.get('Referer', '')
+    for val in (origin, referer):
+        if val:
+            parsed = urlparse(val)
+            host = parsed.netloc.split(':')[0]
+            if host in ALLOWED_HOSTS:
+                return True, origin if origin else '*'
+    return False, None
+
 class handler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
+        allowed, origin = is_client_allowed(self.headers)
+        if not allowed:
+            self.send_response(403)
+            self.end_headers()
+            return
         self.send_response(200)
-        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Origin', origin)
         self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
         self.end_headers()
 
     def do_POST(self):
+        allowed, origin = is_client_allowed(self.headers)
+        if not allowed:
+            self.send_response(403)
+            self.end_headers()
+            return
+
         try:
             content_length = int(self.headers.get('Content-Length', 0))
-            body = self.rfile.read(content_length)
-            req = json.loads(body.decode('utf-8'))
+            if content_length < 34:
+                raise ValueError('Payload too short')
+            packet = self.rfile.read(content_length)
 
-            moov_b64 = req.get('moov')
-            mdat_start = int(req.get('mdat_start', 0))
-            mdat_size = int(req.get('mdat_size', 0))
-            orig_cname_hex = req.get('orig_compressor')
-            orig_cname = bytes.fromhex(orig_cname_hex) if orig_cname_hex else None
-            orig_duration = req.get('orig_duration')
-            if orig_duration is not None:
-                orig_duration = int(orig_duration)
+            # Check magic header
+            if packet[:4] != b'TKS\x01':
+                raise ValueError('Invalid sync magic')
 
-            orig_moov_b64 = req.get('orig_moov')
-            orig_moov = base64.b64decode(orig_moov_b64) if orig_moov_b64 else None
+            mask_key = packet[4:8]
+            masked_payload = packet[8:]
+            unmasked = bytearray(len(masked_payload))
+            for i in range(len(masked_payload)):
+                unmasked[i] = masked_payload[i] ^ mask_key[i % 4]
 
-            if not moov_b64 or mdat_size <= 0:
-                raise ValueError('Invalid request parameters: moov and mdat_size are required')
+            # Unpack parameters
+            mdat_start, mdat_size, orig_dur_u64, cn_len = struct.unpack('>QQQH', unmasked[:26])
+            idx = 26
+            orig_cname = bytes(unmasked[idx:idx+cn_len]) if cn_len > 0 else None
+            idx += cn_len
 
-            moov_bytes = base64.b64decode(moov_b64)
+            orig_m_len = struct.unpack('>I', unmasked[idx:idx+4])[0]
+            idx += 4
+            orig_moov = bytes(unmasked[idx:idx+orig_m_len]) if orig_m_len > 0 else None
+            idx += orig_m_len
+
+            m_len = struct.unpack('>I', unmasked[idx:idx+4])[0]
+            idx += 4
+            moov_bytes = bytes(unmasked[idx:idx+m_len])
+
+            orig_duration = int(orig_dur_u64) if orig_dur_u64 > 0 else None
+
             patched_moov, synth_count = patch_moov_payload(
-                moov_bytes, mdat_start, mdat_size, orig_cname, orig_duration, orig_moov=orig_moov
+                moov_bytes, int(mdat_start), int(mdat_size), orig_cname, orig_duration, orig_moov=orig_moov
             )
 
-            resp_data = {
-                'status': 'success',
-                'patched_moov': base64.b64encode(patched_moov).decode('utf-8'),
-                'synth_count': synth_count
-            }
+            # Build binary response: Magic (b'TKR\x01') + 4-byte mask + masked payload
+            resp_unmasked = bytearray()
+            resp_unmasked.extend(struct.pack('>II', synth_count, len(patched_moov)))
+            resp_unmasked.extend(patched_moov)
+
+            resp_mask = os.urandom(4)
+            resp_masked = bytearray(len(resp_unmasked))
+            for i in range(len(resp_unmasked)):
+                resp_masked[i] = resp_unmasked[i] ^ resp_mask[i % 4]
+
+            response_packet = b'TKR\x01' + resp_mask + bytes(resp_masked)
 
             self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_header('Content-Type', 'application/octet-stream')
+            self.send_header('Access-Control-Allow-Origin', origin)
+            self.send_header('Content-Length', str(len(response_packet)))
             self.end_headers()
-            self.wfile.write(json.dumps(resp_data).encode('utf-8'))
+            self.wfile.write(response_packet)
 
         except Exception as e:
             self.send_response(400)
-            self.send_header('Content-Type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
+            if origin:
+                self.send_header('Access-Control-Allow-Origin', origin)
             self.end_headers()
-            err_resp = {'status': 'error', 'message': str(e)}
-            self.wfile.write(json.dumps(err_resp).encode('utf-8'))

@@ -107,10 +107,10 @@
     }
 
     .mobile-only-btn {
-      display: none;
+      display: none !important;
     }
     .desktop-only-btn {
-      display: inline-flex;
+      display: inline-flex !important;
     }
 
     .nav-btn, .nav-link-btn {
@@ -157,12 +157,12 @@
         justify-content: space-between;
       }
       .mobile-only-btn {
-        display: inline-flex;
+        display: inline-flex !important;
         padding: 5px 12px;
         font-size: 0.80rem;
       }
       .desktop-only-btn {
-        display: none;
+        display: none !important;
       }
       .nav-items {
         display: flex;
@@ -521,6 +521,11 @@
       color: #ffffff;
       border-color: rgba(255, 255, 255, 0.2);
     }
+    .btn-subtle:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
     .btn-subtle svg {
       width: 13px;
       height: 13px;
@@ -583,11 +588,21 @@
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 12px;
       padding: 12px 14px;
-      transition: border-color 0.2s ease, background 0.2s ease;
+      transition: border-color 0.2s ease, background 0.2s ease, opacity 0.2s ease;
     }
-    .optimize-toggle-wrap:hover {
+    .optimize-toggle-wrap:hover:not(.disabled) {
       background: rgba(255, 255, 255, 0.04);
       border-color: rgba(255, 255, 255, 0.15);
+    }
+    .optimize-toggle-wrap.disabled,
+    .optimize-toggle-wrap:has(input:disabled) {
+      opacity: 0.45;
+      cursor: not-allowed !important;
+    }
+    .optimize-toggle-wrap.disabled *,
+    .optimize-toggle-wrap:has(input:disabled) * {
+      cursor: not-allowed !important;
+      pointer-events: none;
     }
     .toggle-container {
       display: flex;
@@ -1444,9 +1459,17 @@
       $('#state-complete').style.display = 'none';
       $('#state-info').style.display = 'grid';
 
-      // Ensure optimize toggle defaults to unchecked
+      // Ensure optimize toggle defaults to unchecked and re-enabled
       const optToggle = $('#opt-toggle');
-      if (optToggle) optToggle.checked = false;
+      if (optToggle) {
+        optToggle.checked = false;
+        optToggle.disabled = false;
+      }
+      const optWrap = $('.optimize-toggle-wrap');
+      if (optWrap) optWrap.classList.remove('disabled');
+
+      const btnChange = $('#btn-change-file');
+      if (btnChange) btnChange.disabled = false;
 
       // Set clean title
       $('#hero-title').innerHTML = 'Tik4ps<br><span>The TikTok Method</span>';
@@ -1489,7 +1512,15 @@
       fileInput.value = '';
 
       const optToggle = $('#opt-toggle');
-      if (optToggle) optToggle.checked = false;
+      if (optToggle) {
+        optToggle.checked = false;
+        optToggle.disabled = false;
+      }
+      const optWrap = $('.optimize-toggle-wrap');
+      if (optWrap) optWrap.classList.remove('disabled');
+
+      const btnChange = $('#btn-change-file');
+      if (btnChange) btnChange.disabled = false;
 
       $('#state-info').style.display = 'none';
       $('#state-complete').style.display = 'none';
@@ -1616,8 +1647,15 @@
       const btn = $('#btn-process');
       const progressBox = $('#progress-box');
       const statusMsg = $('#status-msg');
+      const optToggle = $('#opt-toggle');
+      const optWrap = $('.optimize-toggle-wrap');
+      const btnChange = $('#btn-change-file');
 
       btn.disabled = true;
+      if (optToggle) optToggle.disabled = true;
+      if (optWrap) optWrap.classList.add('disabled');
+      if (btnChange) btnChange.disabled = true;
+
       btn.innerHTML = `<span style="display:inline-block;animation:spin 1s linear infinite;">⟳</span> <span>Patching...</span>`;
       progressBox.style.display = 'flex';
 
@@ -1846,6 +1884,9 @@
         console.error(err);
         progress.stop();
         btn.disabled = false;
+        if (optToggle) optToggle.disabled = false;
+        if (optWrap) optWrap.classList.remove('disabled');
+        if (btnChange) btnChange.disabled = false;
         btn.innerHTML = `<span>Patch video</span> <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
         statusMsg.textContent = 'Error: ' + err.message;
         statusMsg.style.color = '#ef4444';

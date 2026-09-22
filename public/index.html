@@ -1633,9 +1633,9 @@
         const durSec = videoMetadata.duration > 0 ? videoMetadata.duration : 1;
         const currentBitrateMbps = (videoMetadata.size * 8) / (durSec * 1000000);
         const isAbove1080p = (videoMetadata.width > 1920 || videoMetadata.height > 1920);
-        const isHeavyBitrate = currentBitrateMbps > 18.5;
+        const isHeavyBitrate = currentBitrateMbps > 8.0;
 
-        // Auto-bypass transcode if file is already optimal (<= 18.5 Mbps and <= 1080p)
+        // Auto-bypass transcode if file is already optimal (<= 8.0 Mbps and <= 1080p) or toggle is off
         const shouldTranscode = isOptChecked && (isAbove1080p || isHeavyBitrate);
 
         // Hardware Thread Allocation:
@@ -1714,13 +1714,13 @@
             }
           }
 
-          // Netflix BPPF Formula cap: ~17.4 Mbps ceiling for 1080p60
+          // High-efficiency transcode: High Profile (100) + B-frames with CRF 22 and 18M VBV ceiling
           ffmpegArgs.push(
             '-c:v', 'libx264',
-            '-preset', 'ultrafast',
+            '-preset', 'superfast',
             '-threads', String(balancedThreads),
             '-x264-params', `threads=${balancedThreads}`,
-            '-b:v', '17M',
+            '-crf', '22',
             '-maxrate', '18M',
             '-bufsize', '36M',
             '-pix_fmt', 'yuv420p',

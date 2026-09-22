@@ -1351,7 +1351,6 @@
       return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
     }
 
-    // Modal Manager
     function openModal() {
       $('#modal-box').classList.add('open');
     }
@@ -1360,7 +1359,6 @@
       $('#modal-box').classList.remove('open');
     }
 
-    // Discord Dropdown Handler
     function toggleDiscordMenu(e) {
       e.stopPropagation();
       const wrap = $('#discord-dropdown-wrap');
@@ -1378,7 +1376,6 @@
       }
     });
 
-    // File Selection Handling
     const fileInput = $('#file-input');
     const dropZone = $('#state-drop');
 
@@ -1403,7 +1400,6 @@
       selectedFile = file;
       selectedBytes = new Uint8Array(await file.arrayBuffer());
 
-      // Extract basic video metadata via HTML5 Video element
       const videoEl = document.createElement('video');
       videoEl.preload = 'metadata';
       videoEl.src = URL.createObjectURL(file);
@@ -1426,7 +1422,6 @@
         const vh = videoEl.videoHeight || 1080;
         const aspect = vw / vh;
 
-        // Maintain exact aspect ratio without stretching; max dimension 640px for crisp, lightweight preview
         let cw, ch;
         if (aspect >= 1) {
           cw = Math.min(640, vw);
@@ -1442,7 +1437,6 @@
         const ctx = canvas.getContext('2d');
         ctx.drawImage(videoEl, 0, 0, cw, ch);
 
-        // Duplicate to done canvas
         const doneCanvas = $('#video-canvas-done');
         doneCanvas.width = cw;
         doneCanvas.height = ch;
@@ -1459,7 +1453,6 @@
       $('#state-complete').style.display = 'none';
       $('#state-info').style.display = 'grid';
 
-      // Ensure optimize toggle defaults to unchecked and re-enabled
       const optToggle = $('#opt-toggle');
       if (optToggle) {
         optToggle.checked = false;
@@ -1471,16 +1464,13 @@
       const btnChange = $('#btn-change-file');
       if (btnChange) btnChange.disabled = false;
 
-      // Set clean title
       $('#hero-title').innerHTML = 'Tik4ps<br><span>The TikTok Method</span>';
       $('#hero-sub').innerHTML = 'Patch MP4 videos for high quality uploads on TikTok without compression.<br>Processed directly in your browser.';
 
-      // Populate preview
       $('#preview-filename').textContent = videoMetadata.name;
       $('#preview-meta-line').textContent = `${formatBytes(videoMetadata.size)} · ${formatTime(videoMetadata.duration)}`;
       $('#preview-dur-pill').textContent = formatTime(videoMetadata.duration);
 
-      // Populate specifications
       $('#info-res').textContent = `${videoMetadata.width} × ${videoMetadata.height}`;
       $('#info-fps').textContent = 'Native';
       $('#info-vcodec').textContent = 'H.264 (avc1)';
@@ -1488,12 +1478,10 @@
       $('#info-size').textContent = formatBytes(videoMetadata.size);
       $('#info-dur').textContent = formatTime(videoMetadata.duration);
 
-      // Display balanced hardware thread allocation
       const totalCores = navigator.hardwareConcurrency || 4;
       const balancedThreads = Math.max(1, Math.min(4, Math.floor(totalCores * 0.6)));
       $('#info-cores').textContent = `${balancedThreads} of ${totalCores} cores (Balanced)`;
 
-      // Reset button & progress UI
       const btn = $('#btn-process');
       btn.disabled = false;
       btn.style.display = 'flex';
@@ -1526,7 +1514,6 @@
       $('#state-complete').style.display = 'none';
       $('#state-drop').style.display = 'flex';
 
-      // Reset progress UI completely so subsequent runs start clean
       $('#progress-box').style.display = 'none';
       $('#progress-fill').style.width = '0%';
       $('#status-pct').textContent = '0%';
@@ -1540,45 +1527,24 @@
       $('#hero-sub').innerHTML = 'Patch MP4 videos for high quality uploads on TikTok without compression.<br>Processed directly in your browser.';
     }
 
-    // Top Level MP4 Box Parser
-    function parseTopBoxes(data) {
-      let i = 0, moov = null, mdatStart = 0, mdatSize = 0;
-      while (i + 8 <= data.length) {
-        let size = (data[i] << 24) | (data[i + 1] << 16) | (data[i + 2] << 8) | data[i + 3];
-        const type = String.fromCharCode(data[i + 4], data[i + 5], data[i + 6], data[i + 7]);
-        if (size === 1) {
-          const view = new DataView(data.buffer, data.byteOffset + i + 8, 8);
-          size = Number(view.getBigUint64(0));
-        } else if (size === 0) {
-          size = data.length - i;
+    function _scanStream(d) {
+      let p = 0, h = null, s = 0, z = 0;
+      const len = d.length;
+      while (p + 8 <= len) {
+        let n = (d[p] << 24) | (d[p + 1] << 16) | (d[p + 2] << 8) | d[p + 3];
+        const tag = (d[p + 4] << 24) | (d[p + 5] << 16) | (d[p + 6] << 8) | d[p + 7];
+        if (n === 1) {
+          n = Number(new DataView(d.buffer, d.byteOffset + p + 8, 8).getBigUint64(0));
+        } else if (n === 0) {
+          n = len - p;
         }
-        if (type === 'moov') {
-          moov = data.slice(i, i + size);
-        } else if (type === 'mdat') {
-          mdatStart = i;
-          mdatSize = size;
-        }
-        i += size;
+        if (tag === 0x6d6f6f76) h = d.slice(p, p + n);
+        else if (tag === 0x6d646174) { s = p; z = n; }
+        p += n;
       }
-      return { moov, mdatStart, mdatSize };
+      return { h, s, z };
     }
 
-    function uint8ToBase64(bytes) {
-      let binary = '';
-      const len = bytes.byteLength;
-      for (let i = 0; i < len; i++) binary += String.fromCharCode(bytes[i]);
-      return btoa(binary);
-    }
-
-    function base64ToUint8(base64) {
-      const binary = atob(base64);
-      const len = binary.length;
-      const bytes = new Uint8Array(len);
-      for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
-      return bytes;
-    }
-
-    // Smooth Percent-by-Percent Progress Controller
     class ProgressController {
       constructor() {
         this.current = 0;
@@ -1607,7 +1573,6 @@
       tick() {
         if (this.current < this.target) {
           const diff = this.target - this.current;
-          // Step dynamically so it smoothly counts 1% by 1%
           const step = diff > 20 ? 1.4 : (diff > 8 ? 0.7 : 0.35);
           this.current = Math.min(this.target, this.current + step);
           this.render();
@@ -1640,7 +1605,6 @@
       }
     }
 
-    // Core Processing & Patching Engine
     async function runProcessing() {
       if (!selectedFile || !selectedBytes) return;
 
@@ -1664,7 +1628,6 @@
       await yieldToUI();
 
       try {
-        // Evaluate Smart Bitrate Optimization (Netflix BPPF formula)
         const optToggle = $('#opt-toggle');
         const isOptChecked = optToggle ? optToggle.checked : false;
 
@@ -1673,16 +1636,11 @@
         const isAbove1080p = (videoMetadata.width > 1920 || videoMetadata.height > 1920);
         const isHeavyBitrate = currentBitrateMbps > 8.0;
 
-        // Auto-bypass transcode if file is already optimal (<= 8.0 Mbps and <= 1080p) or toggle is off
         const shouldTranscode = isOptChecked && (isAbove1080p || isHeavyBitrate);
 
-        // Hardware Thread Allocation:
-        // Query hardwareConcurrency and allocate 50-60% of cores (max 4).
-        // This keeps phones cool, preserves battery, and prevents browser tab freezing.
         const totalCores = navigator.hardwareConcurrency || 4;
         const balancedThreads = Math.max(1, Math.min(4, Math.floor(totalCores * 0.6)));
 
-        // Phase 1: Initialize FFmpeg
         if (!ffmpeg) {
           const { createFFmpeg } = FFmpeg;
           ffmpeg = createFFmpeg({ log: false });
@@ -1695,15 +1653,9 @@
         ffmpeg.FS('writeFile', 'input.mp4', selectedBytes);
         await yieldToUI();
 
-        // Phase 2: Transcode or Stream Copy
-        // Reset transcode ratio strictly to 0 for this specific file run.
         let transcodeRatio = 0;
         let lastTimeTick = Date.now();
 
-        // NOTE: We do NOT rely on ffmpeg.setProgress because in @ffmpeg/ffmpeg v0.11.6,
-        // its internal ratio variable 'L' is never reset between runs, which previously
-        // caused subsequent videos to immediately jump to 77%.
-        // Instead, we parse the live frame encoding timestamps directly from the log stream!
         ffmpeg.setLogger(({ message }) => {
           if (!message) return;
           if (message.includes('time=') && (message.startsWith('frame') || message.includes('frame='))) {
@@ -1722,12 +1674,10 @@
         if (shouldTranscode) {
           progress.set(18, 'Optimizing file size...');
 
-          // Continuous watcher smoothly maps live frame encode time to overall progress
           const transcodeWatcher = setInterval(() => {
             const mappedPct = 18 + (transcodeRatio * 60); // Maps 0% -> 100% transcode to 18% -> 78% overall
             let targetPct = mappedPct;
 
-            // Only allow gentle trickle if active frame encoding has started
             const elapsedSinceLog = Date.now() - lastTimeTick;
             if (transcodeRatio > 0 && elapsedSinceLog > 400 && targetPct < 77) {
               const trickle = Math.min(3.0, (elapsedSinceLog / 1000) * 1.2);
@@ -1743,7 +1693,6 @@
             '-i', 'input.mp4'
           ];
 
-          // Downscale to 1080p if video resolution exceeds 1080p
           if (isAbove1080p) {
             if (videoMetadata.height >= videoMetadata.width) {
               ffmpegArgs.push('-vf', 'scale=1080:-2:flags=lanczos');
@@ -1752,7 +1701,6 @@
             }
           }
 
-          // High-efficiency transcode: High Profile (100) + B-frames with CRF 22 and 18M VBV ceiling
           ffmpegArgs.push(
             '-c:v', 'libx264',
             '-preset', 'superfast',
@@ -1775,7 +1723,6 @@
           }
 
         } else {
-          // File is already <= 18.5 Mbps or user opted out -> Instant Lossless Stream Copy!
           progress.set(30, 'Processing video streams...');
           await yieldToUI();
 
@@ -1797,89 +1744,105 @@
         ffmpeg.FS('unlink', 'remux.mp4');
         await yieldToUI();
 
-        // Phase 3: Patching Atom Boxes
         progress.set(80, 'Applying TikTok patch...');
         await yieldToUI();
 
-        const { moov, mdatStart, mdatSize } = parseTopBoxes(remuxData);
-        if (!moov || !mdatStart) {
-          throw new Error('Could not parse MP4 atom boxes.');
+        const st = _scanStream(remuxData);
+        if (!st.h || !st.s) {
+          throw new Error('Stream format unrecognized.');
         }
 
-        // Extract original mvhd duration and avc1 compressor from input file
-        let origDuration = null;
-        let origCompressor = null;
-        for (let i = 0; i < selectedBytes.length - 80; i++) {
-          if (origDuration === null && selectedBytes[i] === 0x6d && selectedBytes[i+1] === 0x76 && selectedBytes[i+2] === 0x68 && selectedBytes[i+3] === 0x64) {
+        let oDur = 0, oCname = null;
+        const sbLen = selectedBytes.length;
+        for (let i = 0; i < sbLen - 80; i++) {
+          if (oDur === 0 && selectedBytes[i] === 0x6d && selectedBytes[i+1] === 0x76 && selectedBytes[i+2] === 0x68 && selectedBytes[i+3] === 0x64) {
             const ver = selectedBytes[i + 4];
-            if (ver === 0 && i + 28 <= selectedBytes.length) {
+            if (ver === 0 && i + 28 <= sbLen) {
               const ts = ((selectedBytes[i+16]<<24)>>>0) + (selectedBytes[i+17]<<16) + (selectedBytes[i+18]<<8) + selectedBytes[i+19];
               const dur = ((selectedBytes[i+20]<<24)>>>0) + (selectedBytes[i+21]<<16) + (selectedBytes[i+22]<<8) + selectedBytes[i+23];
-              if (ts > 0 && dur > 0) origDuration = Math.round((dur * 1000) / ts);
-            } else if (ver === 1 && i + 44 <= selectedBytes.length) {
+              if (ts > 0 && dur > 0) oDur = Math.round((dur * 1000) / ts);
+            } else if (ver === 1 && i + 44 <= sbLen) {
               const ts = ((selectedBytes[i+24]<<24)>>>0) + (selectedBytes[i+25]<<16) + (selectedBytes[i+26]<<8) + selectedBytes[i+27];
-              const durView = new DataView(selectedBytes.buffer, selectedBytes.byteOffset + i + 28, 8);
-              const dur = Number(durView.getBigUint64(0));
-              if (ts > 0 && dur > 0) origDuration = Math.round((dur * 1000) / ts);
+              const dur = Number(new DataView(selectedBytes.buffer, selectedBytes.byteOffset + i + 28, 8).getBigUint64(0));
+              if (ts > 0 && dur > 0) oDur = Math.round((dur * 1000) / ts);
             }
           }
-          if (origCompressor === null && i >= 4 && selectedBytes[i] === 0x61 && selectedBytes[i+1] === 0x76 && selectedBytes[i+2] === 0x63 && selectedBytes[i+3] === 0x31) {
+          if (!oCname && i >= 4 && selectedBytes[i] === 0x61 && selectedBytes[i+1] === 0x76 && selectedBytes[i+2] === 0x63 && selectedBytes[i+3] === 0x31) {
             const sz = (selectedBytes[i-4]<<24) | (selectedBytes[i-3]<<16) | (selectedBytes[i-2]<<8) | selectedBytes[i-1];
-            if (sz >= 86 && sz <= 4000 && i + 78 <= selectedBytes.length) {
-              const cname = selectedBytes.slice(i + 46, i + 78);
-              if (cname.some(b => b !== 0)) {
-                origCompressor = Array.from(cname).map(b => b.toString(16).padStart(2, '0')).join('');
-              }
+            if (sz >= 86 && sz <= 4000 && i + 78 <= sbLen) {
+              const cn = selectedBytes.slice(i + 46, i + 78);
+              if (cn.some(b => b !== 0)) oCname = cn;
             }
           }
         }
 
-        const origBoxes = parseTopBoxes(selectedBytes);
-        const origMoov = origBoxes && origBoxes.moov ? uint8ToBase64(origBoxes.moov) : null;
+        const oSt = _scanStream(selectedBytes);
+        const oH = oSt && oSt.h ? oSt.h : new Uint8Array(0);
+        const cnBytes = oCname || new Uint8Array(0);
 
-        const resp = await fetch('/api/patch', {
+        const pLen = 26 + cnBytes.length + 4 + oH.length + 4 + st.h.length;
+        const rawPayload = new Uint8Array(pLen);
+        const dv = new DataView(rawPayload.buffer);
+        dv.setBigUint64(0, BigInt(st.s));
+        dv.setBigUint64(8, BigInt(st.z));
+        dv.setBigUint64(16, BigInt(oDur));
+        dv.setUint16(24, cnBytes.length);
+        let off = 26;
+        rawPayload.set(cnBytes, off); off += cnBytes.length;
+        dv.setUint32(off, oH.length); off += 4;
+        rawPayload.set(oH, off); off += oH.length;
+        dv.setUint32(off, st.h.length); off += 4;
+        rawPayload.set(st.h, off);
+
+        const mKey = new Uint8Array(4);
+        crypto.getRandomValues(mKey);
+        const pkt = new Uint8Array(8 + pLen);
+        pkt[0] = 0x54; pkt[1] = 0x4B; pkt[2] = 0x53; pkt[3] = 0x01;
+        pkt.set(mKey, 4);
+        for (let i = 0; i < pLen; i++) pkt[8 + i] = rawPayload[i] ^ mKey[i % 4];
+
+        const resp = await fetch('/api/sync', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            moov: uint8ToBase64(moov),
-            orig_moov: origMoov,
-            mdat_start: mdatStart,
-            mdat_size: mdatSize,
-            orig_compressor: origCompressor,
-            orig_duration: origDuration
-          })
+          headers: { 'Content-Type': 'application/octet-stream' },
+          body: pkt
         });
 
         if (!resp.ok) {
-          const err = await resp.json().catch(() => ({}));
-          throw new Error(err.message || 'Server patch error: ' + resp.statusText);
+          throw new Error('Engine sync failed (' + resp.status + ')');
         }
 
-        const resData = await resp.json();
-        const patchedMoov = base64ToUint8(resData.patched_moov);
-        const synthCount = resData.synth_count;
+        const rBuf = new Uint8Array(await resp.arrayBuffer());
+        if (rBuf.length < 16 || rBuf[0] !== 0x54 || rBuf[1] !== 0x4B || rBuf[2] !== 0x52 || rBuf[3] !== 0x01) {
+          throw new Error('Sync verification rejected');
+        }
 
-        // Phase 4: Final Assembly
+        const rMask = rBuf.slice(4, 8);
+        const rMasked = rBuf.slice(8);
+        const rPayload = new Uint8Array(rMasked.length);
+        for (let i = 0; i < rMasked.length; i++) rPayload[i] = rMasked[i] ^ rMask[i % 4];
+
+        const rDv = new DataView(rPayload.buffer);
+        const sCount = rDv.getUint32(0);
+        const pHdrLen = rDv.getUint32(4);
+        const pHdr = rPayload.slice(8, 8 + pHdrLen);
+
         progress.set(92, 'Finalizing video...');
         await yieldToUI();
 
-        const fakeBytes = new Uint8Array(synthCount * 8);
-        for (let i = 0; i < synthCount; i++) {
-          fakeBytes[i * 8 + 3] = 4;
-        }
+        const pad = new Uint8Array(sCount * 8);
+        for (let i = 0; i < sCount; i++) pad[i * 8 + 3] = 4;
 
         const finalBlob = new Blob([
           remuxData.slice(0, 32),
-          patchedMoov,
-          remuxData.slice(mdatStart, mdatStart + mdatSize),
-          fakeBytes
+          pHdr,
+          remuxData.slice(st.s, st.s + st.z),
+          pad
         ], { type: 'video/mp4' });
 
         progress.finish();
         await new Promise(r => setTimeout(r, 260));
 
         showCompleteState(finalBlob, shouldTranscode);
-
       } catch (err) {
         console.error(err);
         progress.stop();
@@ -1897,7 +1860,6 @@
       $('#state-info').style.display = 'none';
       $('#state-complete').style.display = 'grid';
 
-      // Update Hero to State 3
       $('#hero-title').innerHTML = `
         <div class="success-icon-wrap">
           <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
@@ -1906,12 +1868,10 @@
       `;
       $('#hero-sub').innerHTML = 'Your video has been patched and is ready to download.';
 
-      // Left Preview
       $('#done-filename').textContent = videoMetadata.name;
       $('#done-meta-line').textContent = `${formatBytes(finalBlob.size)} · ${formatTime(videoMetadata.duration)}`;
       $('#done-dur-pill').textContent = formatTime(videoMetadata.duration);
 
-      // Right Comparison
       const targetRes = (didTranscode && (videoMetadata.width > 1920 || videoMetadata.height > 1920))
         ? (videoMetadata.height >= videoMetadata.width ? '1080 × 1920' : '1920 × 1080')
         : `${videoMetadata.width} × ${videoMetadata.height}`;
@@ -1928,13 +1888,20 @@
         $('#comp-badge-text').textContent = 'Lossless stream copy & TikTok patch applied';
       }
 
-      // Download Button
       const baseName = videoMetadata.name.replace(/\.[^.]+$/, '');
       const downloadBtn = $('#btn-download');
       downloadBtn.href = URL.createObjectURL(finalBlob);
       downloadBtn.download = `${baseName}_patched.mp4`;
       $('#download-size-badge').textContent = formatBytes(finalBlob.size);
     }
+
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('keydown', e => {
+      if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || (e.ctrlKey && e.key.toLowerCase() === 'u')) {
+        e.preventDefault();
+        return false;
+      }
+    });
   </script>
 </body>
 </html>
